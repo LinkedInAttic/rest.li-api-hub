@@ -1,0 +1,96 @@
+@(keyword: String, protocol: String)
+
+  <form action="@routes.Application.searchResources" method="get">
+  <input type="hidden" name="protocol" value="@protocol" id="protocolEl"/>
+  <div class="input-group col-lg-6" style="padding-left: 0px">
+    <input id="searchBox" class="form-control" type="text" placeholder="Search Resources" name="keyword" value="@keyword">
+    <span class="input-group-btn">
+      <button id="searchBtn" type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search"></span></button>
+    </span>
+
+    @*<div class="input-group-btn">
+      <button class="btn dropdown-toggle" id="protocolSelect" data-toggle="dropdown">
+        @if(protocol == "ALL") {
+          All
+        }
+        @if(protocol == "REST") {
+          REST
+        }
+        @if(protocol == "CONTENT_SERVICE") {
+          Content Services
+        }
+        <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu">
+        <li><a href="#" onclick="$('#protocolEl').val('REST'); $('#protocolSelect').html('REST <span class=\'caret\'></span>')">REST Resources</a></li>
+        <li><a href="#" onclick="$('#protocolEl').val('CONTENT_SERVICE'); $('#protocolSelect').html('Content Services <span class=\'caret\'></span>')">Content Services</a></li>
+        <li><a href="#" onclick="$('#protocolEl').val('ALL'); $('#protocolSelect').html('All <span class=\'caret\'></span>')">All</a></li>
+      </ul>
+    </div>*@
+  </div>
+  <small><a href="#search-help" data-toggle="modal">Advanced Search Options</a></small>
+</form>
+
+<div id="search-help" class="modal" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3>Advanced Search Options</h3>
+      </div>
+      <div class="modal-body">
+        <p class="lead">
+          <a href="http://lucene.apache.org/core/2_9_4/queryparsersyntax.html">Lucene's
+          Query Syntax</a> may be used to compose advanced searches and narrow searches to specific fields.
+        </p>
+
+<p>For example, to search for collections containing finders:</p>
+<pre>isCollection:true AND hasFinder:true
+</pre>
+Or, to find resources supporting partial updates:
+<pre>method:partial_update
+</pre>
+
+        <p>The following fields are available:</p>
+        <table class="table table-condensed table-hover">
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>keywords</td><td>this is the default search field ("activities" and "keywords: activities" are equivalent) and includes many of the terms from the other fields to make simple search more convenient.</td></tr>
+            <tr><td>resource</td><td>the name of a resource.  E.g. "resource:countries"</td></tr>
+            <tr><td>cluster</td><td>the name of a cluster.  E.g. "cluster:UscpProxyApi"</td></tr>
+            <tr><td>protocol</td><td>may be either "REST" or "CONTENT_SERVICE"</td></tr>
+            <tr><td>isCollection</td><td>matches collection resources.  E.g. "isCollection:true"</td></tr>
+            <tr><td>hasComplexKey</td><td>matches collections with complex keys. E.g. "hasComplexKey:true"</td></tr>
+            <tr><td>isAssociation</td><td>matches association resources.  E.g. "isAssociation:true"</td></tr>
+            <tr><td>isSimple</td><td>matches simple resources.  E.g. "isSimple:true"</td></tr>
+            <tr><td>isActionSet</td><td>matches action set resources.  E.g. "isActionSet:true"</td></tr>
+            <tr><td>isSubresource</td><td>matches subresources.  E.g. "isSubresource:true"</td></tr>
+            <tr><td>hasFinder</td><td>matches resources containing finders.  E.g. "hasFinder:true"</td></tr>
+            <tr><td>finder</td><td>the names of finders on a resource.  E.g. "finder:criteria"</td></tr>
+            <tr><td>hasAction</td><td>matches resources containing any actions.  E.g. "hasAction:true"</td></tr>
+            <tr><td>hasEntityAction</td><td>matches resources containing actions that are at the 'entity' level.  E.g. "hasEntityAction:true"</td></tr>
+            <tr><td>action</td><td>the names of actions on a resource.  E.g. "action:clear"</td></tr>
+            <tr><td>method</td><td>the names of supported methods on a resource.  Available methods are E.g. "method:partial_update"</td></tr>
+            <tr><td>assocKeys</td><td>the names of association keys on an association resource.  E.g. "assocKeys:src"</td></tr>
+            <tr><td>isDeprecated</td><td>matches resources that are marked as deprecated.  E.g. "isDeprecated:true"</td></tr>
+            <tr><td>isInternalToSuperblock</td><td>matches resources that are marked as internal to their superblock.  E.g. "isInternalToSuperblock:true"</td></tr>
+            <tr><td>hasDeprecated</td><td>matches resources with methods/finders/actions that are marked as deprecated.  E.g. "hasDeprecated:true"</td></tr>
+            <tr><td>hasTestMethod</td><td>matches resources with methods/finders/actions that are intended for use by tests only.  E.g. "hasTestMethod:true"</td></tr>
+            <tr><td>isColoVariant</td><td>matches resources that are a d2 colo variant of another resource.  <b>Defaults to "isColoVariant:false"</b> unless isColoVariant or coloVariant are provided.</td></tr>
+            <tr><td>coloVariant</td><td>matches that have a specific d2 colo variant suffix.  E.g. "coloVariant:Master"</td></tr>
+            <tr><td>createdDate</td><td>The date the resource was first added to D2.  E.g. "createdDate[20131200 TO 20131231]"</td></tr>
+            <tr><td>modifiedDate</td><td>The date the resource was last modified in to D2.  E.g. "modifiedDate[20131200 TO 20131231]"</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Close</button>
+      </div>
+    </div> @* modal-content *@
+  </div> @* modal-dialog *@
+</div> @* modal *@

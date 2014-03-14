@@ -1,0 +1,97 @@
+@(cluster: com.linkedin.restsearch.Cluster)
+@import com.linkedin.data.template.GetMode
+
+@import com.linkedin.restsearch.Protocol
+@import scala.collection.immutable.List
+@import com.linkedin.restsearch.template.utils.Conversions._
+
+@main("go/restli: " + cluster.getName() + " cluster") {
+  @*<ul class="breadcrumb">
+    <li class="active">@cluster.getName() Cluster</li>
+  </ul>*@
+<div class="row">
+  <div class="col-lg-9">
+    <h2>@cluster.getName()</h2>
+
+    @if(cluster.hasD2Cluster && cluster.getD2Cluster.hasPartitionConfiguration) {
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <div class="pull-right">
+            <a href="https://iwww.corp.linkedin.com/wiki/cf/display/ENGS/D2+User+Manual#D2UserManual-Zookeeperdatalayout.Allthepropertykeysandabriefdescription.">Properties Documentation</a>
+          </div>
+          <h3 class="panel-title">
+            D2 Cluster Properties
+          </h3>
+        </div>
+        <div class="panel-body">
+          @defining(cluster.getD2Cluster.getPartitionConfiguration) { partitionConfig =>
+            @if(partitionConfig.hasPartitionCount) {
+              <div class="padded">
+                <b>partitionCount: </b>@partitionConfig.getPartitionCount
+              </div>
+            }
+            @if(partitionConfig.hasPartitionKeyRegex) {
+              <div class="padded">
+                <b>partitionKeyRegex: </b>@partitionConfig.getPartitionKeyRegex
+              </div>
+            }
+            @if(partitionConfig.hasPartitionTypeSpecificData) {
+              @defining(partitionConfig.getPartitionTypeSpecificData) { typeSpecificData =>
+                @if(typeSpecificData.isHashAlgorithm) {
+                  <div class="padded">
+                    <b>Hash Algorithm: </b>@typeSpecificData.getHashAlgorithm
+                  </div>
+                }
+                @if(typeSpecificData.isRangedPartitionProperties) {
+                  <div class="padded">
+                    @d2PropertiesTable("Ranged Partition Property", typeSpecificData.getRangedPartitionProperties.data())
+                  </div>
+                }
+              }
+            }
+            @if(partitionConfig.hasType) {
+              <div class="padded">
+                <b>type: </b>@partitionConfig.getType
+              </div>
+            }
+          }
+        </div>
+      </div>
+    }
+
+    <ul id="protocol-tabs" class="nav nav-tabs">
+      <li><a id="rest-tab" href="#Resources" data-toggle="tab">Resources</a></li>
+      <li><a href="#nodes-tab" data-toggle="tab">Nodes</a></li>
+    </ul>
+
+    <div id="protocol-tab-content" class="tab-content">
+      @defining(List(Protocol.REST, Protocol.CONTENT_SERVICE)) { protocols =>
+        @protocols.map { protocol =>
+          <div class="tab-pane" id="Resources">
+            @clusterservices(cluster, collapseColoVariants=cluster.isPrimaryColoVariant)
+          </div>
+        }
+        <div class="tab-pane" id="nodes-tab">
+          <table class="table table-condensed table-hover">
+            <thead>
+              <tr>
+                <th>Partition Description (map of partition ID to weight)</th>
+                <th>URI</th>
+              </tr>
+            </thead>
+            <tbody>
+              @cluster.uris.map { server =>
+                <tr>
+                  <td>@server.getPartitionDescription(GetMode.DEFAULT)</td>
+                  <td>@server.getURI(GetMode.DEFAULT)</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+<script type="text/javascript" src='@routes.Assets.at("javascripts/clusterdetails.js")'></script>
+}

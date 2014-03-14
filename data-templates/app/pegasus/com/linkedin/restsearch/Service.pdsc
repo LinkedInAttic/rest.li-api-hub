@@ -1,0 +1,71 @@
+{
+  "type": "record",
+  "name": "Service",
+  "namespace": "com.linkedin.restsearch",
+  "doc": "A Rest.li service as represented in D2",
+  "fields": [
+    {
+      "name": "key",
+      "type": "string"
+    },
+    {
+      "name": "path",
+      "type": "string"
+    },
+    {
+      "name": "clusters",
+      "type": {
+        "type": "array",
+        "items": "Cluster"
+      },
+      "default": []
+    },
+    {
+      "name": "d2Service",
+      "type": "com.linkedin.restliexplorer.D2Service",
+      "optional": true
+    },
+    {
+      "name": "protocol",
+      "type": "Protocol"
+    },
+    {
+      "name": "resourceSchema",
+      "type": "com.linkedin.restli.restspec.ResourceSchema",
+      "optional": true
+    },
+    {
+      "name": "provenance",
+      "type": "com.linkedin.restsearch.Provenance",
+      "optional": true
+    },
+    {
+      "name": "models",
+      "type": {
+        "type": "map",
+        "values": "string"
+      },
+      "default": {}
+    },
+    {
+      "name": "parent",
+      "type": "Service",
+      "optional": true
+    },
+    {
+      "name": "defaultService",
+      "type": "boolean",
+      "default": false
+    },
+    {
+      "name": "createdAt",
+      "type": "long",
+      "optional": true
+    },
+    {
+      "name": "modifiedAt",
+      "type": "long",
+      "optional": true
+    }
+  ]
+}

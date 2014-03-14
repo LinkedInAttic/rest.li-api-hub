@@ -1,0 +1,15 @@
+{
+  "type": "record",
+  "name": "Mixin",
+  "namespace": "com.linkedin.restsearch",
+  "fields": [
+    {
+      "name": "resourceProvenance",
+      "type": {
+        "type": "map",
+        "values": "com.linkedin.restsearch.Provenance"
+      },
+      "default": {}
+    }
+  ]
+}

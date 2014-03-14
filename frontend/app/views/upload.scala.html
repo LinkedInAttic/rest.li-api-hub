@@ -1,0 +1,48 @@
+@()(implicit request: play.api.mvc.RequestHeader)
+
+@main("go/restli: upload") {
+
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-9">
+        <div>
+          <h2>Create permlink from a snapshot.json file</h2>
+
+          <p>
+            Upload a snapshot.json here to create a fully rendered permlink for it.
+          </p>
+        </div>
+
+        <div>
+          <form class="form-inline" role="form"
+            enctype="multipart/form-data"
+            action="@routes.Application.upload"
+            method="post">
+
+            <div class="form-group">
+              <input type="file" name="snapshot" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-primary">Create permlink</button>
+          </form>
+        </div>
+
+        <br/><br/>
+        <div>
+          <p>
+              Example permlink: <a href="@routes.Application.service("permlink:30344","complexKeys")">permlink:30344</a>.
+          </p>
+
+          <p>
+            Snapshot files are located in the source directories of api modules after they are built
+            (e.g. <code>ligradle build</code> or <code>ligradle publishRestliSnapshot</code>).  For MPs, this is usually
+            <code>{api-project}/src/main/snapshot</code>.
+          </p>
+
+          <p>
+              Your snapshot file will be stored in <a href="http://go/pastein">go/pastein</a> and you will be redirected to a permlink URL that can be shared.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+}

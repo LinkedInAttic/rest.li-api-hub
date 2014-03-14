@@ -1,0 +1,22 @@
+@(firstColumnName: String, data: com.linkedin.data.DataMap)
+
+@import scala.collection.JavaConversions._
+
+  @if(data.nonEmpty) {
+    <table class="table table-condensed table-hover">
+      <thead>
+        <tr>
+          <th>@firstColumnName</th>
+          <th>Property Value</th>
+        </tr>
+      </thead>
+      <tbody>
+      @data.map { keyValue =>
+        <tr>
+          <td>@keyValue._1</td>
+          <td>@keyValue._2</td>
+        </tr>
+      }
+      </tbody>
+    </table>
+  }

@@ -1,0 +1,75 @@
+@(httpMethod: String, d2path: String, headers: String, requestBody: Option[String], responseBody: Option[String], metadata: com.linkedin.data.DataMap)(implicit request: play.api.mvc.RequestHeader)
+
+@main("go/restli: HTTP Console") {
+  <h2>HTTP Console</h2>
+
+  <div class="alert alert-warning">
+    <h4>Warning!</h4>
+    <p>When you click 'Send', a request is made against live services running in @metadata.get("fabric").  Please keep this in mind, particularly when creating, updating and deleting data.</p>
+    <p>
+    Pre-filled examples contains random generated values for keys and field values.
+    Please substitute in appropriate values.
+    </p>
+  </div>
+  <div class="alert alert-info">
+    <p>The "Permlink" button will create a link that captures all current input values. You can send the link to anybody who wants to replicate what you see here.</p>
+  </div>
+
+  <form id="console-form" class="form-horizontal" action="@request.uri" method="post">
+    <div class="form-group">
+      <label class="col-lg-2 control-label" for="httpMethod">Method</label>
+      <div class="col-lg-10">
+        <select class="form-control" id="http-method-select" id="httpMethod" name="httpMethod">
+          <option value="GET" @if(httpMethod == "GET"){selected}>GET</option>
+          <option value="POST" @if(httpMethod == "POST"){selected}>POST</option>
+          <option value="PUT" @if(httpMethod == "PUT"){selected}>PUT</option>
+          <option value="DELETE" @if(httpMethod == "DELETE"){selected}>DELETE</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="col-lg-2 control-label" for="d2path">d2://</label>
+      <div class="col-lg-10">
+        <input class="form-control" type="text" id="d2path" name="d2path" value="@d2path">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="col-lg-2 control-label" for="headers">Headers</label>
+      <div class="col-lg-10">
+        <textarea class="form-control" id="headers" name="headers" rows="3">@headers</textarea>
+      </div>
+    </div>
+
+    <div id="request-body-section" class="form-group" if(httpMethod == "GET" || httpMethod == "DELETE) { style="display: none;" }>
+      <label class="col-lg-2 control-label" for="body">Body</label>
+      <div class="col-lg-10">
+        <textarea class="form-control" id="body" name="body" rows="10">@requestBody.getOrElse("")</textarea>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <div class="col-lg-offset-2 col-lg-10">
+        <div style="float: left">
+          <button type="submit" class="btn btn-primary">Send Request</button>
+          <button type="button" id="permlink-btn" class="btn btn-info" data-url="@routes.Application.newPermlink()">Create Permlink</button>
+        </div>
+        <div style="overflow: hidden; padding-left: 3px">
+          <input type="text" id="permlink" class="form-control" readonly="readonly" />
+        </div>
+      </div>
+    </div>
+
+    @responseBody.map { response =>
+    <div class="control-group">
+      <label class="col-lg-2 control-label" for="response">Response</label>
+      <div class="col-lg-10">
+        <pre id="response">@Html(response)</pre>
+      </div>
+    </div>
+    }
+  </form>
+
+  <script type="text/javascript" src="@routes.Assets.at("javascripts/console.js")"></script>
+}

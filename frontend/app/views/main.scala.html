@@ -1,0 +1,66 @@
+@(title: String, includeNavSearch: Boolean = true)(content: Html)
+
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+  <head>
+    <title>@title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/bootstrap.min.css")">
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/bootstrap-theme.min.css")">
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/gorestli.css")">
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/chrome.css")">
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/prettify.css")">
+    <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("img/favicon.ico")">
+    <script src="@routes.Assets.at("javascripts/jquery-1.10.2.min.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("javascripts/jquery.cookie.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("javascripts/bootstrap.min.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("javascripts/prettify.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("javascripts/Chart.js")" type="text/javascript"></script>
+  </head>
+  <body>
+    <div class="navbar navbar-static-top navbar-inverse topbar" style="margin-bottom: 0px;">
+      <div class="container">
+        <a class="navbar-brand" href="@routes.Application.index/">Rest.li</a>
+        @if(includeNavSearch) {
+          <form action="@routes.Application.searchResources" method="get" class="navbar-form pull-left">
+            <input type="hidden" name="protocol" value="REST"/>
+            <input type="text" class="form-control" style="width: 200px;" placeholder="Search" name="keyword">
+          </form>
+        }
+        <ul class="nav navbar-nav pull-right">
+          <li><a href="@routes.Application.upload">Upload</a></li>
+          <li><a href="@routes.Application.dashboard">Stats</a></li>
+
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Documentation <b class="caret"></b></a>
+            <ul class="dropdown-menu" role="menu">
+              <li><a href="https://github.com/linkedin/rest.li/wiki/Rest.li-User-Guide">Rest.li User Guide</a></li>
+              <li><a href="https://iwww.corp.linkedin.com/wiki/cf/display/ENGS/Rest.li+Multiproduct+Quickstart">Rest.li Multiproduct Quickstart</a></li>
+              <li><a href="https://iwww.corp.linkedin.com/wiki/cf/display/ENGS/RestLi+In+Network+-+Cookbook">Rest.li In Network Quickstart</a></li>
+              <li><a href="https://iwww.corp.linkedin.com/wiki/cf/display/ENGS/Rest.li+Client+Quickstart">Rest.li Client Quickstart</a></li>
+              <li><a href="https://github.com/linkedin/rest.li/wiki/Rest.li-Protocol">Rest.li HTTP Protocol Definition</a></li>
+              <li><a href="https://github.com/linkedin/rest.li/wiki/DATA-Data-Schema-and-Templates">Pegaus Data (aka PDSC)</a></li>
+              <li><a href="https://iwww.corp.linkedin.com/wiki/cf/pages/viewpage.action?pageId=46019762">Rest.li FAQ</a></li>
+              <li><a href="https://iwww.corp.linkedin.com/wiki/cf/display/ENGS/Pegasus+Schema+FAQ">Pegasus Schema (.pdsc) FAQ</a></li>
+              <li><a href="https://iwww.corp.linkedin.com/wiki/cf/display/ENGS/Rest+and+Data+Model+Home">REST and Data Modeling wiki</a></li>
+              <li><a href="https://iwww.corp.linkedin.com/wiki/cf/display/ENGS/HOW-TO+Model+Your+Resources+in+Rest.li">How To Model Resources</a></li>
+              <li><a href="https://iwww.corp.linkedin.com/wiki/cf/display/ENGS/Rest.li">Rest.li team wiki</a></li>
+              <li><a href="https://iwww.corp.linkedin.com/wiki/cf/display/ENGS/URN+Registry">URN Registry</a></li>
+              <li><a href="https://iwww.corp.linkedin.com/wiki/cf/display/ENGS/Rest.li+Common+Models">Common Models</a></li>
+              <li><a href="https://iwww.corp.linkedin.com/wiki/cf/display/ENGS/Queue+for+upcoming+REST+Reviews">REST Review</a></li>
+              <li><a href="@routes.Application.errors">Known errors</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div> @* navbar *@
+      
+    <div class="container">
+      @content
+    </div>
+    <div class="container">
+    </div>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/search.js")"></script>
+  </body>
+</html>

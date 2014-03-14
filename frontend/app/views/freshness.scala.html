@@ -1,0 +1,17 @@
+@(metadata: com.linkedin.data.DataMap)
+
+@import org.joda.time.Duration
+@import org.joda.time.format.PeriodFormatterBuilder
+@import org.joda.time.PeriodType
+
+@toPeriod(refreshedAt: Long) = @{
+  val period = new Duration(refreshedAt, System.currentTimeMillis()).toPeriod().normalizedStandard(PeriodType.dayTime())
+  val formatter = new PeriodFormatterBuilder()
+  if(period.getDays() > 0) formatter.appendDays().appendSuffix(" day", " days")
+  else if(period.getHours() > 0) formatter.appendHours().appendSuffix(" hour", " hours")
+  else if(period.getMinutes() > 0) formatter.appendMinutes().appendSuffix(" minute", " minutes")
+  else formatter.appendSeconds().appendSuffix(" second", " seconds")
+  formatter.toFormatter().print(period)
+}
+
+<p class="text-muted"><small>Connected to @metadata.get("fabric").  @metadata.get("totalEntries") resources available, data refreshed @toPeriod(metadata.getLong("refreshedAt")) ago.</small></p>

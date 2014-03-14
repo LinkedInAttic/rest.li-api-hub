@@ -1,0 +1,623 @@
+@(cluster: com.linkedin.restsearch.Cluster, service: com.linkedin.restsearch.Service, entitySchema: Option[com.linkedin.data.schema.DataSchema], typeRenderer: com.linkedin.restsearch.html.TypeRenderer, exampleGenerator : Option[com.linkedin.restli.docgen.examplegen.ExampleRequestResponseGenerator])
+@import com.linkedin.restli.server.ResourceLevel
+
+@import com.linkedin.data.template.GetMode
+@import com.linkedin.restli.common.ResourceMethod
+@import com.linkedin.restli.internal.server.util.DataMapUtils
+@import com.linkedin.r2.message.rest.RestResponse
+@import com.linkedin.r2.message.rest.RestRequest
+@import com.linkedin.restli.common.ResourceMethod
+@import com.linkedin.restsearch.ClusterSource
+@import com.linkedin.restli.client.uribuilders.RestliUriBuilderUtil
+@import scala.collection.JavaConversions._
+@import com.linkedin.data.template.StringArray
+@import com.linkedin.restli.restspec._
+@import com.linkedin.restsearch.html._
+@import com.linkedin.restli.client.Request
+@import com.linkedin.data.schema._
+@import com.linkedin.restsearch.template.utils.Conversions._
+@import com.linkedin.restsearch.template.utils.MethodSchemaPart
+@import org.joda.time.DateTime
+@import com.linkedin.restli.docgen.examplegen.ExampleRequestResponse
+
+@identifier(identifier : IdentifierSchema) = {
+  Key:
+  <ul class="list-inline">
+    <li>
+      <code>@identifier.getName(): @Html(typeRenderer.typeStringToHtml(identifier.getType()))</code>
+    </li>
+  </ul>
+
+  @if(identifier.hasParams) {
+    Params:
+    <ul class="list-inline">
+      <li>
+        <code>$params: @Html(typeRenderer.typeStringToHtml(identifier.getParams()))</code>
+      </li>
+    </ul>
+  }
+}
+
+@dataSchema(schema: DataSchema) = {
+  @schema match {
+    case record: NamedDataSchema => {
+      <section id="data-schema">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title @if(record.getProperties().contains("deprecated")){deprecated}">
+              @record.getName() Schema @*Html(typeRenderer.typeStringToHtml(record.getFullName())) Data Schema*@
+            </h3>
+          </div>
+          <div class="panel-body">
+            <div class="pull-right">
+              @* TODO: add link to json *@
+            </div>
+            @record.getProperties().get("deprecated") match {
+              case deprecated: String => {
+                <span class="label label-danger">Deprecated!</span> @deprecated
+              }
+              case deprecated: java.lang.Boolean if (deprecated == true) => {
+                <span class="label label-danger">Deprecated!</span>
+              }
+              case _ => {}
+            }
+            @if(record.getDoc() != null) {
+              <div class="restlidoc"><p>@Html(record.getDoc())</p></div>
+            }
+            @dataschematable(schema, typeRenderer)
+          </div>
+        </div>
+      </section>
+    }
+    case _ => {}
+  }
+}
+
+@toAssocKeys(assocKeyNames : StringArray) = @{
+  if(service.getResourceSchema.hasAssociation) {
+    val assocKeys = assocKeyNames.flatMap { assocKeyName =>
+      service.getResourceSchema.getAssociation.getAssocKeys.find(_.getName == assocKeyName)
+    }
+    Some(new AssocKeySchemaArray(assocKeys))
+  } else {
+    None
+  }
+}
+
+@assocKeys(assocKeys : AssocKeySchemaArray) = {
+  Association Keys:
+  <ul class="list-inline">
+  @assocKeys.map { key =>
+    <li>
+      <code>
+        @key.getName(): @Html(typeRenderer.typeStringToHtml(key.getType()))
+      </code>
+    </li>
+  }
+  </ul>
+}
+
+@examples(operationName: String, example: ExampleRequestResponse) = {
+  <div class="btn-group pull-right">
+    <button class="btn btn-link btn-sm dropdown-toggle"
+            style="margin-top:0px; padding-top:0px;"
+               id="#operationName-examples" role="button" data-toggle="dropdown">
+      View Examples <span class="glyphicon glyphicon-chevron-down"></span>
+    </button>
+    <ul class="dropdown-menu" role="menu" aria-labelledby="#operationName-examples">
+      <li><a href="#@operationName-httpExample" data-toggle="modal">HTTP</a></li>
+      <li><a href="#@operationName-curliExample" data-toggle="modal">curli</a></li>
+      <li><a href="@routes.Application.send(cluster.getName(), service.keysToResource.mkString("."), operationName)" >Try it!</a></li>
+    </ul>
+  </div>
+
+  <div id="@operationName-httpExample" class="modal" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h3>@operationName HTTP Example</h3>
+        </div>
+        <div class="modal-body">
+          <h5>Request</h5>
+            @httpRequest(example.getRequest)
+          <h5>Response<h5>
+            @response(example.getResponse)
+        </div>
+        <div class="modal-footer">
+          <a class="btn" href="@routes.Application.send(cluster.getName(), service.keysToResource.mkString("."), operationName)" >Try it!</a>
+          <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="@operationName-curliExample" class="modal" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h3>@operationName curli Example</h3>
+        </div>
+        <div class="modal-body">
+          <h5>Request<h5>
+            @curliRequest(example.getRequest)
+          <h5>Response<h5>
+            @response(example.getResponse)
+        </div>
+        <div class="modal-footer">
+          <a class="btn" href="@routes.Application.send(cluster.getName(), service.keysToResource.mkString("."), operationName)" >Try it!</a>
+          <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+@template(example: ExampleRequestResponse) = {
+@example.getRequest.getMethod @Html(example.getRequest.exampleUriWithMarkup)
+}
+
+@httpRequest(request: RestRequest) = {
+<pre>@request.getMethod @request.exampleUri
+@request.headers.map{ case(key, value)=>@key: @value}.mkString("\n")
+@if(request.input.isDefined){
+@request.input.get}</pre>
+}
+
+@curliRequest(request: RestRequest) = {
+<pre>curli --pretty-print "d2:/@request.exampleUri"
+-X @request.getMethod
+@request.curliExampleHeaders.map{ case(key, value)=>-H @key: @value}.mkString("\n")
+@if(request.input.isDefined){--data '@request.input.get'}</pre>
+}
+
+@response(response: RestResponse) = {
+@if(response != null) {
+<pre>HTTP/1.1 @response.status
+@response.headers.map{ case(key, value)=>@key: @value}.mkString("\n")
+@if(response.body.isDefined){
+@response.body.get</pre>
+}}}
+
+@resourceMethodLinks(schema: ResourceSchema) = {
+  @if(schema.methods.nonEmpty) {
+    <li>
+      @methodsLinks(schema.methods)
+    </li>
+  }
+  @if(schema.finders.nonEmpty) {
+    <li>
+      @findersLinks(schema.finders)
+    </li>
+  }
+  @if(schema.actions.nonEmpty) {
+    <li>
+      @actionsLinks(schema.actions)
+    </li>
+  }
+  @if(schema.entityActions.nonEmpty) {
+    <li>
+      @actionsLinks(schema.entityActions, Some(schema.entityPath))
+    </li>
+  }
+  @if(schema.subresources.nonEmpty) {
+    @subresources(schema.subresources)
+  }
+}
+
+@resourceMethodDetails(schema: ResourceSchema, identifierType: String) = {
+
+  @if(schema.methods.nonEmpty) {
+    @methods(schema.methods, identifierType)
+  }
+
+  @if(schema.finders.nonEmpty) {
+    @finders(schema.finders)
+  }
+
+  @if(schema.actions.nonEmpty) {
+    @actions(schema.actions)
+  }
+
+  @if(schema.entityActions.nonEmpty) {
+    @actions(schema.entityActions, Some(schema.entityPath))
+  }
+}
+
+@docAndAnnotations(annotated: MethodSchemaPart) = {
+  @if(annotated.isDeprecated){
+    <div>
+      <span class="label label-danger">Deprecated!</span> @annotated.deprecatedDoc.getOrElse("")
+    </div>
+  }
+  @if(annotated.isTestMethod){
+    <div>
+      <span class="label label-warning">Test Method!</span> @annotated.testMethodDoc.getOrElse("")
+    </div>
+  }
+  @if(annotated.hasDocumentation) {
+    <div>
+      @Html(annotated.documentation)
+    </div>
+  }
+}
+
+@methodsLinks(methods: RestMethodSchemaArray) = {
+  Supports:
+  <ul class="list-inline">
+    @methods.map { methodSchema =>
+      <li><a href="#@methodSchema.getMethod" @if(methodSchema.isDeprecated){class="deprecated"}>@methodSchema.getMethod</a></li>
+    }
+  </ul>
+}
+
+@methods(methods: RestMethodSchemaArray, key: String) = {
+  @if(methods != null && methods.size() > 0) {
+    <section id="methods">
+      @*<div class="page-header">
+        <h3>Methods</h3>
+      </div>*@
+
+      @methods.toList.zipWithIndex.map { case(method, index) =>
+        @defining(try {exampleGenerator.map(_.method(ResourceMethod.valueOf(method.getMethod.toUpperCase))) } catch { case e => None } ) { exampleOpt =>
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              @if(cluster.getSource == ClusterSource.D2 && exampleOpt.isDefined) {
+                @examples(method.getMethod(), exampleOpt.get)
+              }
+              <h3 class="panel-title">
+                <a id="@method.getMethod()"></a><span @if(method.isDeprecated){class="deprecated"}>@method.getMethod()</span>
+                <code class="op-template">@exampleOpt.map{example=>@template(example)}</code>
+              </h3>
+            </div>
+            <div class="panel-body">
+              @docAndAnnotations(method)
+
+              <div>
+                @parametersTable(method.getParameters())
+              </div>
+
+              <div>
+                Returns a @Html(TypeRenderer.typeOfABasicMethod(method, service, key, typeRenderer))
+              </div>
+            </div>
+          </div>
+        }
+      }
+    </section>
+  }
+}
+
+@findersLinks(finders: FinderSchemaArray) = {
+  Finders:
+  <ul class="list-inline">
+    @finders.map { finderSchema =>
+      <li><a href="#@finderSchema.getName" @if(finderSchema.isDeprecated){class="deprecated"}>@finderSchema.getName</a></li>
+    }
+  </ul>
+}
+
+@finders(finders: FinderSchemaArray) = {
+  @if(finders != null && finders.size() > 0) {
+    <section id="finders">
+      @finders.toList.zipWithIndex.map { case(finder, index) =>
+        @defining(try {exampleGenerator.map(_.finder(finder.getName)) } catch { case e => None } ) { requestOpt =>
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              @if(cluster.getSource == ClusterSource.D2 && requestOpt.isDefined) {
+                @examples(finder.getName(), requestOpt.get)
+              }
+              <h3 class="panel-title">
+
+                <a id="@finder.getName()"></a><span @if(finder.isDeprecated){class="deprecated"}>"@finder.getName()" Finder</span>
+                <code class="op-template">@requestOpt.map{request=>@template(request)}</code>
+              </h3>
+            </div>
+            <div class="panel-body">
+              @docAndAnnotations(finder)
+
+              @if(finder.hasAssocKeys) {
+                <div>
+                  @toAssocKeys(finder.getAssocKeys).map { finderAssocKeys =>
+                    @assocKeys(finderAssocKeys)
+                  }
+                </div>
+                <br>
+              }
+
+              <div>
+                @parametersTable(finder.getParameters())
+              </div>
+
+              <div>
+                Returns a <a href="https://github.com/linkedin/rest.li/wiki/Rest.li-Protocol#list-of-entities">list response</a> of @Html(typeRenderer.typeStringToHtml(service.getResourceSchema().getSchema())) results
+                @if(finder.hasMetadata()) {
+                   with @Html(typeRenderer.typeStringToHtml(finder.getMetadata().getType())) metadata
+                }
+              </div>
+            </div>
+          </div>
+        }
+      }
+    </section>
+  }
+}
+
+@actionsLinks(actions: ActionSchemaArray, entityPath: Option[String] = None) = {
+  @if(entityPath.isDefined){Entity }Actions:
+  <ul class="list-inline">
+    @actions.map { actionSchema =>
+      <li><a href="#@actionSchema
+      .getName" @if(actionSchema.isDeprecated){class="deprecated"}>@actionSchema.getName</a></li>
+    }
+  </ul>
+}
+
+@actions(actions: ActionSchemaArray, entityPath: Option[String] = None) = {
+  @if(actions != null && actions.size() > 0) {
+    <section id="actions">
+      @actions.toList.zipWithIndex.map { case(action, index) =>
+        @defining( try { exampleGenerator.map(_.action(action.getName, if(entityPath.isDefined) ResourceLevel.ENTITY else ResourceLevel.COLLECTION)) } catch { case e => None } ) { requestOpt =>
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              @if(cluster.getSource == ClusterSource.D2 && requestOpt.isDefined) {
+                @examples(action.getName(), requestOpt.get)
+              }
+              <h3 class="panel-title">
+                <a id="@action.getName()"></a><span @if(action.isDeprecated){class="deprecated"}>"@action.getName()" @if(entityPath.isDefined){Entity }Action</span>
+                <code class="op-template">@requestOpt.map{request=>@template(request)}</code>
+              </h3>
+            </div>
+            <div class="panel-body">
+              @docAndAnnotations(action)
+
+              <div>
+                @parametersTable(action.getParameters())
+              </div>
+
+              <div>
+                @if(action.hasReturns()) {
+                  <p>
+                  Returns an <a href="https://github.com/linkedin/rest.li/wiki/Rest.li-Protocol#action-response">action response</a> containing a @Html(typeRenderer.typeStringToHtml(action.getReturns())).
+                  </p>
+                } else {
+                  Returns with an empty response body.  Check HTTP Status code to determine if action was successful.
+                }
+              </div>
+            </div>
+          </div>
+        }
+      }
+    </section>
+  }
+}
+
+@parametersTable(params: ParameterSchemaArray) = {
+  @if(params != null && params.size() > 0) {
+    <table class="table table-condensed">
+      <thead>
+        <tr>
+          <th>Parameter</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        @params.map { param =>
+          <tr>
+            <td>@param.getName()</td>
+            <td>@if(param.hasOptional() && param.isOptional()){optional }@Html(typeRenderer.paramTypeToHtml(param))@if(param.hasDefault()){, default="@param.getDefault()"}</td>
+            <td>
+              @if(param.hasDoc()) {
+                <ul class="list-unstyled">
+                  <li class="restlidoc">@Html(param.getDoc())</li>
+                </ul>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+}
+
+@parametersList(params : ParameterSchemaArray) = {
+  <ul class="list-unstyled">
+    @defining(params.filter(_.isOptional == false)) { required =>
+      @if(required.nonEmpty) {
+        <li>
+          Required Parameters:
+          @parameterList(required)
+        </li>
+      }
+    }
+
+    @defining(params.filter(_.isOptional == true)) { optional =>
+      @if(optional.nonEmpty) {
+        <li>
+          Optional Parameters:
+          @parameterList(optional)
+        </li>
+      }
+    }
+  </ul>
+}
+
+@parameterList(params : Seq[ParameterSchema]) = {
+  <ul class="list-inline">
+  @params.map { param =>
+    <li>
+      <code>
+        @param.getName(): @Html(typeRenderer.paramTypeToHtml(param))
+        @if(param.hasDefault()){, default="@param.getDefault()"}
+      </code>
+    </li>
+  }
+  </ul>
+}
+
+@subresources(subresources: ResourceSchemaArray) = {
+  Sub-Resources:
+  <ul class="list-inline">
+    @subresources.map { subresource =>
+      @*<li>@subresource.getName()</li>*@
+      <li><a href="@routes.Application.service(cluster.getName(), service.keysToResource.mkString(".") + "." + subresource.getName())">/@subresource.getName()</a></li>
+    }
+  </ul>
+}
+
+@main("go/restli: " + service.keysToResource.mkString("/")) {
+  <ul class="breadcrumb">
+    <li><a href="@routes.Application.cluster(cluster.getName())">@cluster.getName() Cluster</a> <span class="divider"></span></li>
+    @defining(service.keysToResource) { parts =>
+      @parts.toList.zipWithIndex.map { case(part, index) =>
+        @defining(parts.take(index+1)) { parentKeys =>
+          @if(index < parts.size - 1) {
+            <li><a href="@routes.Application.service(cluster.getName(), parentKeys.mkString("."))">@part</a> <span class="divider"></span></li>
+          } else {
+            <li class="active">@part Resource</li>
+          }
+        }
+      }
+    }
+  </ul>
+
+
+<div class="row">
+  <div class="@if(service.hasProvenance){col-lg-7}else{col-lg-12}">
+    <div class="panel panel-default">
+      <div class="panel-body">
+        @if(cluster.getSource == ClusterSource.D2) {
+          <div class="pull-right">
+           <p><a role="button" href="@routes.Application.idl(cluster.getName, service.keysToResource.mkString("."))">Interface Definition</a></p>
+           <p><a role="button" href="@ExternalSites.createUrlToRestdocs(cluster, service.pathsToResource.mkString("."))">Resource Documentation</a></p>
+           <p><a role="button" href="@ExternalSites.createD2UrlToDecoProxy(service, typeRenderer.resolver)">Deco Link</a></p>
+           @*TODO: Add Link to Raw IDL*@
+          </div>
+        }
+        <h2 @if(service.hasResourceSchema && service.getResourceSchema.isScoped){class="text-muted"}><span @if(service.hasResourceSchema && service.getResourceSchema.isDeprecated){class="deprecated"}>/@service.keysToResource.mkString("/")</span></h2>
+        @if(service.hasResourceSchema) {
+          @if(service.getResourceSchema.isDeprecated){
+            <div class="alert alert-danger">
+              <b>Deprecated!</b>
+                @service.getResourceSchema.deprecatedDoc.getOrElse("This resource has been marked as deprecated.")
+            </div>
+          }
+          @if(service.getResourceSchema.isInternalToSuperblock){
+            <div class="alert alert-warning">
+              <b>Internal to Superblock!</b>
+              @service.getResourceSchema.internalToSuperblockDoc.getOrElse("This service is internal to it's super block and should not be called from clients external to the super block.")
+            </div>
+          }
+        }
+        <div>
+          <p>
+            @if(service.hasResourceSchema()) {
+              @defining(service.getResourceSchema()) { schema =>
+                @if(schema.hasSchema) {
+                  @Html(typeRenderer.typeStringToHtml(schema.getSchema()))
+                }
+                @if(schema.hasCollection()) {collection}
+                @if(schema.hasAssociation()) {association}
+                @if(schema.hasSimple()) {simple}
+                @if(schema.hasActionsSet()) {actions set}
+              }
+            }
+          </p>
+          <p>
+            @if(service.hasParent()) {
+              Subresource of <a href="@routes.Application.service(cluster.getName(), service.getParent.keysToResource.mkString("."))">/@service.getParent.keysToResource.mkString("/")</a>
+            }
+          </p>
+
+          @if(service.hasResourceSchema()) {
+            @defining(service.getResourceSchema()) { schema =>
+              @if(schema.hasDoc() && !schema.getDoc().startsWith("generated from:")) {
+                <div class="restlidoc"><p>@Html(schema.getDoc().split("generated from:")(0))</p></div>
+              }
+
+              @if(schema.hasCollection()) {
+                <ul class="list-unstyled">
+                  @if(schema.getCollection().hasIdentifier()) {
+                    <li>
+                      @identifier(schema.getCollection().getIdentifier())
+                    </li>
+                  }
+                  @resourceMethodLinks(schema)
+                </ul>
+              }
+              @if(schema.hasAssociation()) {
+                <ul class="list-unstyled">
+                  @if(schema.getAssociation().hasAssocKeys()) {
+                    <li>
+                      @assocKeys(schema.getAssociation().getAssocKeys())
+                    </li>
+                  }
+                  @resourceMethodLinks(schema)
+                </ul>
+              }
+
+              @if(schema.hasSimple()) {
+                <ul class="list-unstyled">
+                  @resourceMethodLinks(schema)
+                </ul>
+              }
+
+              @if(schema.hasActionsSet()) {
+                <ul class="list-unstyled">
+                  @if(schema.getActionsSet().hasActions()) {
+                    <li>
+                      @actionsLinks(schema.getActionsSet().getActions())
+                    </li>
+                  }
+                </ul>
+              }
+            }
+          }
+        </div>
+        @if(service.hasCreatedAt) {
+          <div class="pull-right">
+            @serviced2details(service.getD2Service, service.getCreatedAt, Option(service.getModifiedAt(GetMode.NULL)))
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if(service.hasProvenance) {
+    @dependencymanagement(service, service.getProvenance)
+  }
+  </div>
+
+
+
+  @if(service.hasResourceSchema()) {
+    @defining(service.getResourceSchema()) { schema =>
+      <ul class="list-unstyled">
+        <li>
+
+          @if(entitySchema.isDefined) {
+            @dataSchema(entitySchema.get)
+          }
+
+          @if(schema.hasCollection()) {
+            @defining(schema.getCollection().getIdentifier().getType()) { identifier =>
+              @resourceMethodDetails(schema, identifier)
+            }
+          }
+          @if(schema.hasAssociation()) {
+            @resourceMethodDetails(schema, "ComplexKey")
+          }
+          @if(schema.hasSimple()) {
+            @resourceMethodDetails(schema, "Keyless")
+          }
+          @if(schema.hasActionsSet()) {
+            @resourceMethodDetails(schema, "Keyless")
+          }
+        </li>
+      </ul>
+      }
+    }
+  </div>
+}

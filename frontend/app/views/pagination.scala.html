@@ -1,0 +1,34 @@
+@(keyword: String, protocol: String, paging: com.linkedin.restli.common.CollectionMetadata)
+
+@page = @{
+  paging.getStart()/controllers.Application.resultsPerPage
+}
+@pages = @{
+  paging.getTotal()/controllers.Application.resultsPerPage
+}
+
+@if(pages > 0) {
+<ul class="pagination pagination-sm">
+  @if(page > 0) {
+    <li><a href="?keyword=@keyword&protocol=@protocol&page=@(page-1)">Prev</a></li>
+  } else {
+    <li class="disabled"><a href="#">Prev</a></li>
+  }
+  @if(math.max(page-5, 0) > 0) {
+    <li><a href="?keyword=@keyword&protocol=@protocol&page=0">1</a></li>
+    <li class="disabled"><a href="#">...</a></li>
+  }
+  @for(p <- math.max(page-5, 0) to math.min(page+5, pages)) {
+    <li @if(p == page) { class="active" } ><a href="?keyword=@keyword&protocol=@protocol&page=@p">@(p+1)</a></li>
+  }
+  @if(math.min(page+5, pages) < pages) {
+    <li class="disabled"><a href="#">...</a></li>
+    <li><a href="?keyword=@keyword&protocol=@protocol&page=@pages">@(pages+1)</a></li>
+  }
+  @if(page < pages) {
+    <li><a href="?keyword=@keyword&protocol=@protocol&page=@(page+1)">Next</a></li>
+  } else {
+    <li class="disabled"><a href="#">Next</a></li>
+  }
+</ul>
+}

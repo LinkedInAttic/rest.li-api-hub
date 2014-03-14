@@ -1,0 +1,24 @@
+{
+  "type": "record",
+  "name": "Dataset",
+  "namespace": "com.linkedin.restsearch",
+  "doc": "Represents all D2 data and all IDL data for a fabric",
+  "fields": [
+    {
+      "name": "clusters",
+      "type": {
+        "type": "map",
+        "values": "Cluster"
+      },
+      "default": {}
+    },
+    {
+      "name": "serviceErrors",
+      "type": {
+        "type": "map",
+        "values": "string"
+      },
+      "default": {}
+    }
+  ]
+}

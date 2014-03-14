@@ -1,0 +1,6 @@
+{
+  "type":"typeref",
+  "name":"Uri",
+  "namespace":"com.linkedin.common",
+  "ref":"string"
+}

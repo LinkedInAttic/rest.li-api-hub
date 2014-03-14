@@ -1,0 +1,20 @@
+{
+  "type": "record",
+  "name": "Provenance",
+  "namespace": "com.linkedin.restsearch",
+  "fields": [
+    {
+      "name": "resource",
+      "type": "com.linkedin.restsearch.IvyCoordinate"
+    },
+    {
+      "name": "sourceClass",
+      "type": "string",
+      "optional": true
+    },
+    {
+      "name": "restClient",
+      "type": "com.linkedin.restsearch.IvyCoordinate"
+    }
+  ]
+}

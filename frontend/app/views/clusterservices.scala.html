@@ -1,0 +1,36 @@
+@(cluster: com.linkedin.restsearch.Cluster, collapseColoVariants: Boolean = true)
+
+@import com.linkedin.restsearch.Protocol
+@import com.linkedin.restsearch.template.utils.Conversions._
+
+@defining(cluster.services(primaryOnly=collapseColoVariants).groupBy(_.getProtocol())) { serviceGroups =>
+  @if(serviceGroups.map{_._2.size}.sum > 0) {
+    <ul class="list-unstyled">
+    @serviceGroups.toList.sortBy(_._1).map { serviceGroup =>
+      @defining(serviceGroup) { case (protocol, services) =>
+        @services.sortWith(_.getKey() < _.getKey()).map { service =>
+          @if(service.getProtocol() == Protocol.REST) {
+            <li>
+              <a @if(service.hasResourceSchema && service.getResourceSchema.isScoped){class="text-muted"} href="@routes.Application.service(cluster.getName(), service.getKey())">/@service.getKey()@if(service.hasResourceSchema && service.getResourceSchema.isScoped){ @service.getResourceSchema.scope}</a>
+              @defining(cluster.coloVariants(service)) { variants =>
+                @if(collapseColoVariants && variants.nonEmpty) {
+                  <span class="text-muted">-
+                    <ul class="comma-separated">
+                      @variants.map { variant =>
+                        <li><a class="text-muted" href="@routes.Application.service(cluster.getName(), variant.getKey())">@variant.coloVariantSuffix</a></li>
+                      }
+                    </ul>
+                  </span>
+                }
+              }
+              @Html(Application.subresources(cluster, service))
+            </li>
+          } else {
+            <li><a href="@ExternalSites.createUrlToRestdocs(cluster, service.getPath())">@service.getKey()</a></li>
+          }
+        }
+      }
+    }
+  </ul>
+  }
+}

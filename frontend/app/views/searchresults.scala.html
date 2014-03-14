@@ -1,0 +1,95 @@
+@(keyword: String, protocol: String, results: List[com.linkedin.restsearch.Service], paging: com.linkedin.restli.common.CollectionMetadata, metadata: com.linkedin.data.DataMap)
+
+@import scala.collection.JavaConversions._
+@import com.linkedin.restsearch.Protocol
+  @import com.linkedin.restsearch.template.utils.Conversions._
+
+  @main("go/restli: " + keyword, includeNavSearch = false) {
+<div class="row">
+  <div class="col-lg-9">
+    @freshness(metadata)
+
+    @searchbox(keyword, protocol)
+
+    <br> <br>
+
+    @if(keyword.length > 0) {
+      <p class="muted">@paging.getTotal() results for <i>'@keyword'</i></p>
+    }
+  
+    <ul class="media-list">
+    @results.map { result =>
+      @defining(result.getClusters().get(0)) { cluster =>
+      <li class="media">
+        <div class="media-body">
+          <h4 class="media-heading">
+            @if(result.getProtocol() == Protocol.CONTENT_SERVICE) {
+              <a href="@routes.Application.service(cluster.getName(), result.getKey())">/@result.getKey()</a>
+            } else {
+              @if(result.hasResourceSchema()) {
+                <a @if(result.getResourceSchema.isScoped){class="text-muted"} href="@routes.Application.service(cluster.getName(), result.keysToResource.mkString("."))">/@result.keysToResource.mkString("/")@if(result.getResourceSchema.isScoped){ @result.getResourceSchema.scope}</a>
+              }
+            }
+          </h4>
+          
+          <small class="resultsubtext">
+            @if(result.getProtocol() == Protocol.REST && result.hasResourceSchema()) {
+              @defining(result.getResourceSchema()) { schema =>
+                @if(schema.hasCollection()) {
+                  <a href="@routes.Application.model(cluster.getName(), result.getKey(), schema.getSchema())">@schema.schemaName</a> collection
+                }
+                @if(schema.hasAssociation()) {
+                  <a href="@routes.Application.model(cluster.getName(), result.getKey(), schema.getSchema())">@schema.schemaName</a> association
+                }
+                @if(schema.hasActionsSet()) {
+                  action set
+                }
+              }
+              -
+            }
+            <a href="@routes.Application.cluster(cluster.getName())">@cluster.getName()</a>
+            -
+            d2://@result.getKey()
+          </small>
+          
+        @if(result.getProtocol() == Protocol.REST && result.hasResourceSchema()) {
+          @defining(result.getResourceSchema()) { schema =>
+            <ul class="list-unstyled">
+              <li>
+                </li>
+                @if(schema.hasDoc() && !schema.getDoc().startsWith("generated from:")) {
+                  <li>@Html(schema.getDoc())</li>
+                }
+                <li>
+                @Map("methods" -> schema.methods.map(_.name),
+                     "finders" -> schema.finders.map(_.name),
+                     "actions" -> schema.actions.map(_.name),
+                     "entityActions" -> schema.entityActions.map(_.name)).map { case (name, elements) =>
+                    @if(elements.nonEmpty) {
+                      <small>@name:
+                      <ul class="comma-separated">
+                      @elements.map { element =>
+                        <li><a href="@routes.Application.service(cluster.getName(), result.keysToResource.mkString("."))#@element">@element</a></li>
+                      }
+                      </ul>
+                      </small>&nbsp;&nbsp;
+                    }
+                }
+
+            </li>
+          </ul>
+          }
+        }
+        </div>
+      </li>
+      }
+    }
+    </ul>
+    @pagination(keyword, protocol, paging)
+  </div>
+
+</div>
+
+<script type="text/javascript" src="@routes.Assets.at("javascripts/searchresults.js")"></script>
+
+}

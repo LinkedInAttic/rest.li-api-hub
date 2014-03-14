@@ -1,0 +1,27 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file                controllers.Assets.at(path="/public", file)
+
+# @pagekey play-skeleton-home
+GET     /                           controllers.Application.index
+GET     /search                     controllers.Application.searchResources
+GET     /apis/:name                 controllers.Application.cluster(name)
+GET     /apis/:name/:key            controllers.Application.service(name, key)
+GET     /apis/:name/:key/:fqn       controllers.Application.model(name, key, fqn)
+GET     /idl/:name/:key             controllers.Application.idl(name, key)
+
+GET     /console/:name/:key/:op     controllers.Application.console(name, key, op, permlink: Option[String] ?= None)
+POST    /console/:name/:key/:op     controllers.Application.send(name, key, op)
+POST    /console/permlink           controllers.Application.newPermlink()
+GET     /errors                     controllers.Application.errors
+
+# snapshots
+GET     /upload                     controllers.Application.uploadPrompt
+POST    /upload                     controllers.Application.upload
+
+# for fun
+GET     /dashboard                  controllers.Application.dashboard
+

@@ -1,0 +1,35 @@
+.resultsubtext {
+  color: rgb(0, 153, 51);
+}
+
+.resultsubtext a {
+  color: rgb(0, 153, 51);
+  text-decoration:underline;
+}
+
+section.api-list {
+  padding-top: 30px;
+}
+
+ul.comma-separated { display: inline; margin: 0; padding: 0; }
+ul.comma-separated li { display: inline-block; }
+ul.comma-separated li:after { content: ","; }
+ul.comma-separated li:last-child:after { content: ""; }
+
+.chart {
+  padding-bottom: 30px;
+  padding-top: 30px;
+  border-bottom: 1px solid rgba(117, 117, 117, 0.25);
+}
+
+.visualization {
+  text-align: center;
+}
+
+.chart-data .data-points li {
+  font-weight: bold;
+}
+
+.padded {
+  padding: 15px;
+}

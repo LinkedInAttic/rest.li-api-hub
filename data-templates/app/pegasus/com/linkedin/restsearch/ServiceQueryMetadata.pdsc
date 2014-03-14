@@ -1,0 +1,15 @@
+{
+  "type": "record",
+  "name": "ServiceQueryMetadata",
+  "namespace": "com.linkedin.restsearch",
+  "fields": [
+    {
+      "name": "refreshedAt",
+      "type": "long"
+    },
+    {
+      "name": "totalEntries",
+      "type": "int"
+    }
+  ]
+}

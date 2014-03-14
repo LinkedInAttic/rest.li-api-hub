@@ -1,0 +1,40 @@
+{
+  "type": "record",
+  "name": "Cluster",
+  "namespace": "com.linkedin.restsearch",
+  "doc": "A cluster as represented in D2",
+  "fields": [
+    {
+      "name": "name",
+      "type": "string"
+    },
+    {
+      "name": "services",
+      "type": {
+        "type": "array",
+        "items": "Service"
+      },
+      "default": []
+    },
+    {
+      "name": "d2Cluster",
+      "type": "com.linkedin.restliexplorer.D2Cluster",
+      "optional": true
+    },
+    {
+      "name": "source",
+      "type": { "name": "ClusterSource", "type": "enum", "symbols": ["D2", "SNAPSHOT"] },
+      "default": "D2"
+    },
+    {
+      "name": "createdAt",
+      "type": "long",
+      "optional": true
+    },
+    {
+      "name": "modifiedAt",
+      "type": "long",
+      "optional": true
+    }
+  ]
+}

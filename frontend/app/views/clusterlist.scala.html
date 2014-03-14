@@ -1,0 +1,133 @@
+@(clusters: List[com.linkedin.restsearch.Cluster], metadata: com.linkedin.data.DataMap)
+
+@import com.linkedin.restsearch.template.utils.Conversions._
+
+@main("go/restli", includeNavSearch = false) {
+
+<div class="row">
+  <div class="col-lg-9">
+    @freshness(metadata)
+
+    @searchbox("", "REST")
+
+    <br><br>
+
+    @*<div class="alert alert-info">
+      Put news here.
+    </div>*@
+
+    <a data-toggle="modal" href="#announcements">Previous announcements</a>
+    <div class="modal fade" id="announcements" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title">Previous Announcements</h4>
+        </div>
+        <div class="modal-body">
+          <div>
+            <h4>Share REST Requests, Upload APIs Snapshots</h4>
+            <p>
+              <b>Share REST Requests:</b>
+              Permlinks can be created from the console allowing
+              anyone to share replay-able REST requests with others.
+              To get to the console,  go to a resource page and click on "examples->try it!" next to a rest method.
+              <a href="@routes.Application.console("BizProfile", "companies", "get", Some("31894"))">Here's an example</a>.
+            </p>
+
+            <p>
+              <b>Upload APIs Snapshots:</b>
+              Also, permlinks can be created for APIs that are not yet in D2.  Just upload a snapshot.json
+              file from your rest.li project into go/restli and you can share it.
+              <a href="@routes.Application.service("permlink:30344","complexKeys")">Here's an example</a>.
+              Click the "Upload" link in the navbar to get started.
+            </p>
+
+            <h4>Build rest.li services on Play!</h4>
+            <p>
+              Initial support for building rest.li services on
+              the <a href="http://go/play">Play Framework</a> is now available. This
+                gives you a chance to build a rest.li service with full hot reload (even for pdsc's,
+                RecordTemplates, rest.li resources, config, and builders), fully non-blocking I/O,
+                support for both Java and Scala, and a lightweight multi product framework that doesn't
+                use Spring, has great error handling, great documentation, and more.
+            </p>
+
+            <p>
+                There are already a number of rest.li services built on Play: polls (in prod),
+                c3po (in prod), spark (ramping now), and payments-catalog (in progress). We're
+                now looking to expand adoption further.  To provide quality support, we are
+                taking a <b>closed beta approach</b>. If you're interested, please email
+              <b><a href="mailto:jbetz@@linkedin.com">jbetz@@linkedin.com<a/></b> and
+              <b><a href="mailto:jbrikman@@linkedin.com">jbrikman@@linkedin.com</a></b>.
+            </p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+        </div>
+      </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+    
+    <h2>All Available Resources</h2>
+  
+    <div>
+      @defining(clusters.filter(_.getName().size > 0).groupBy(_.getName().charAt(0).toUpper)) { groupedClusters =>
+        <ul class="pagination pagination-sm">
+          @defining('A' to 'Z') { letters =>
+            @letters.map { letter =>
+              <li @if(!groupedClusters.contains(letter)){class="disabled"}><a href="#@letter">@letter</a></li>
+            }
+          }
+        </ul>
+
+        <ul class="media-list">
+          @defining('A' to 'Z') { letters =>
+            @letters.map { letter =>
+              <section class="api-list" id="@letter">
+                @groupedClusters.get(letter).map { clusters =>
+                  @if(letter != 'A') {<div class="page-header"></div>}
+                  @clusters.map { cluster =>
+                    @if(cluster.services(primaryOnly=true).nonEmpty) {
+                      <li class="media">
+                        <h4 class="media-heading">
+                          @defining(cluster.coloVariants(clusters)) { variants =>
+                            @if(variants.nonEmpty) {
+                          <a href="@routes.Application.cluster(cluster.getName())">@cluster.canonicalColoVariantIdentifier</a>
+                              <span class="text-muted">-
+                                <ul class="comma-separated">
+                                  @variants.map { variant =>
+                                  <li><a class="text-muted" href="@routes.Application.cluster(variant.getName())">@variant.coloVariantSuffix</a></li>
+                                  }
+                                </ul>
+                              </span>
+                            } else {
+                              <a href="@routes.Application.cluster(cluster.getName())">@cluster.getName()</a>
+                            }
+                          }
+                        </h4>
+                        @clusterservices(cluster)
+                      </li>
+                    }
+                  }
+                }
+              </section>
+            }
+          }
+        </ul>
+            
+        <ul class="pagination pagination-sm">
+          @defining('A' to 'Z') { letters =>
+            @letters.map { letter =>
+              <li @if(!groupedClusters.contains(letter)){class="disabled"}><a href="#@letter">@letter</a></li>
+            }
+          }
+        </ul>
+      }
+    </div>
+  </div>  
+</div>
+
+<script type="text/javascript" src="@routes.Assets.at("javascripts/clusterlist.js")"></script>
+}

@@ -1,0 +1,24 @@
+{
+  "type": "record",
+  "name": "IvyCoordinate",
+  "namespace": "com.linkedin.restsearch",
+  "fields": [
+    {
+      "name": "org",
+      "type": "string"
+    },
+    {
+      "name": "name",
+      "type": "string"
+    },
+    {
+      "name": "rev",
+      "type": "string"
+    },
+    {
+      "name": "conf",
+      "type": "string",
+      "optional": true
+    }
+  ]
+}

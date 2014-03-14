@@ -1,0 +1,77 @@
+@(clusters: List[com.linkedin.restsearch.Cluster], metadata: com.linkedin.data.DataMap, dashboardStats: com.linkedin.restsearch.server.DashboardStats)
+
+@import com.linkedin.restsearch.Service
+@import com.linkedin.restsearch.server.DashboardStat
+@import com.linkedin.restsearch.template.utils.Conversions._
+@import org.joda.time.DateTime
+
+@chart(title: String, data: List[DashboardStat], canvasOnLeft: Boolean, style: String, width: Int = 250, height: Int = 250, showLegend: Boolean = true) = {
+  <div class="row chart @style">
+    @if(canvasOnLeft) {
+      <div class="col-lg-7 visualization">
+        <canvas class="chart-canvas" style="width: @width; height: @height;" width="@width" height="@height"></canvas>
+      </div>
+    }
+    <div class="col-lg-3 description">
+      <h2 class="chart-title">@title</h2>
+      <ul class="list-unstyled data-points" @if(!showLegend){style="display:none"}>
+      @data.map {
+        case DashboardStat(name, Some(term), count) => {
+          <li data-name="@name" data-value="@count"><span class="data-point-legend glyphicon glyphicon-stop"></span> <a href="@routes.Application.searchResources()?keyword=@term">@name: @count</a></li>
+        }
+        case DashboardStat(name, None, count) => {
+          <li data-name="@name" data-value="@count"><span class="data-point-legend glyphicon glyphicon-stop"></span> @name: @count</li>
+        }
+      }
+      </ul>
+    </div>
+    @if(!canvasOnLeft) {
+      <div class="col-lg-7 visualization">
+        <canvas class="chart-canvas" style="width: @width; height: @height;" width="@width" height="@height"></canvas>
+      </div>
+    }
+  </div>
+}
+
+@serviceList(title: String, list: List[Service]) = {
+  <div class="row chart">
+    <div class="col-lg-5 description">
+      <h2>@title</h2>
+    </div>
+    <div class="col-lg-5">
+      <ul class="list-unstyled">
+      @list.map { service =>
+        <li>
+          @if(service.hasResourceSchema()) {
+            <a @if(service.getResourceSchema.isScoped){class="text-muted"}
+            href="@routes.Application.service(service.getClusters().head.getName(), service.keysToResource.mkString("."))">
+            /@service.keysToResource.mkString("/")@if(service.getResourceSchema.isScoped){
+              @service.getResourceSchema.scope
+            }
+            </a> <span class="text-muted">@(new DateTime(service.getCreatedAt).toLocalDate().toString("MMM d, y"))</span>
+          }
+        </li>
+      }
+      </ul>
+    </div>
+  </div>
+}
+
+@main("go/restli") {
+  <div class="row">
+    <div class="col-lg-9">
+      @freshness(metadata)
+    </div>
+  </div>
+
+  @chart("When Resources were added to D2...", dashboardStats.migrationCounts, true, "line-chart", width=500, height=300, showLegend=false)
+  @serviceList("Resources Added in the last month...", dashboardStats.newResources)
+  @chart("Resource Types", dashboardStats.resourceCounts, true, "bar-chart", width=500, height=300)
+  @chart("Methods, Finders and Actions", dashboardStats.operationCounts, false, "doughnut-chart")
+  @chart("Method Types", dashboardStats.methodCounts, true, "bar-chart", width=700, height=300)
+  @chart("Actions starting with...", dashboardStats.actionCounts, false, "bar-chart", width=500, height=300)
+  @chart("Protocols", dashboardStats.protocolCounts, true, "doughnut-chart")
+  @chart("Batch but no matching non-batch...", dashboardStats.batchOnlyCounts, false, "bar-chart", width=500, height=300)
+
+  <script type="text/javascript" src="@routes.Assets.at("javascripts/dashboard.js")"></script>
+}
