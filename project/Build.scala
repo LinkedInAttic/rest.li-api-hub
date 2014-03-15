@@ -10,6 +10,7 @@ object ApplicationBuild extends Build with restli.All {
   val baseSettings =  super.settings ++ org.sbtidea.SbtIdeaPlugin.settings ++ Seq(
     organization := "com.linkedin.pegasus.gorestli",
     version := "0.0.1",
+    name := "restli-apihub",
     resolvers += Resolver.file("Local Ivy Repository", file(Path.userHome + "/.ivy2/local"))(Resolver.ivyStylePatterns),
     resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
     resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"

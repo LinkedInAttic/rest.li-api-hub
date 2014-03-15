@@ -24,6 +24,11 @@ How to build:
 * Edit project/Build.scala, setting version numbers to match what was installed by the above calls to "./gradlew install".
 * play clean compile
 
+How to configure:
+
+* Modify the 'resourceUrls' property in 'frontend/conf/application.conf' to include URLs to all your resources.
+* OR, if you are running D2.  Set the 'zkHost' and 'zkPort' to point to your D2 zookeeper
+
 How to run:
 
 * play run

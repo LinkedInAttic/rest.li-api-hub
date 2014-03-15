@@ -39,9 +39,9 @@ class SnapshotLoader() extends Runnable {
   private val datasetLoader = dataLoadStrategy match {
     //case "explorerCrawler" => crawlingExplorerLoader
     case "zkCrawler" => crawlingZkLoader
-    case "filesystemCached" => new FilesystemCachingDataLoaderProxy(crawlingZkLoader, filesystemCacheDir)
-    case "urlListCached" => new FilesystemCachingDataLoaderProxy(crawlingUrlListLoader, filesystemCacheDir)
+    case "zkCrawlerFilesystemCached" => new FilesystemCachingDataLoaderProxy(crawlingZkLoader, filesystemCacheDir)
     case "urlCrawler" => crawlingUrlListLoader
+    case "urlCrawlerFilesystemCached" => new FilesystemCachingDataLoaderProxy(crawlingUrlListLoader, filesystemCacheDir)
     //case "explorerFilesystemCached" => new FilesystemCachingDataLoaderProxy(crawlingExplorerLoader, filesystemCacheDir)
     case "resource" => new ResourceDataLoader(filesystemCacheDir)
   }
