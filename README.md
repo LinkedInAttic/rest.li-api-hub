@@ -32,7 +32,7 @@ How to configure:
 How to run:
 
 * play run
-* In your browser, hit `http://localhost:9000/rest-search-frontend`
+* In your browser, hit `http://localhost:9000/apihub/`
 
 How to debug:
 
