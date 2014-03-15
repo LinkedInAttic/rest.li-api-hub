@@ -491,9 +491,6 @@
         @if(cluster.getSource == ClusterSource.D2) {
           <div class="pull-right">
            <p><a role="button" href="@routes.Application.idl(cluster.getName, service.keysToResource.mkString("."))">Interface Definition</a></p>
-           <p><a role="button" href="@ExternalSites.createUrlToRestdocs(cluster, service.pathsToResource.mkString("."))">Resource Documentation</a></p>
-           <p><a role="button" href="@ExternalSites.createD2UrlToDecoProxy(service, typeRenderer.resolver)">Deco Link</a></p>
-           @*TODO: Add Link to Raw IDL*@
           </div>
         }
         <h2 @if(service.hasResourceSchema && service.getResourceSchema.isScoped){class="text-muted"}><span @if(service.hasResourceSchema && service.getResourceSchema.isDeprecated){class="deprecated"}>/@service.keysToResource.mkString("/")</span></h2>
@@ -585,9 +582,11 @@
     </div>
   </div>
 
+  @*
   @if(service.hasProvenance) {
     @dependencymanagement(service, service.getProvenance)
   }
+  *@
   </div>
 
 

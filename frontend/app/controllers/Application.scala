@@ -252,29 +252,38 @@ object Application extends Controller with ConsoleUtils {
   )
 
   def send(clusterName: String, serviceKey: String, op: String) = Action.async { implicit request =>
-    if(consoleEnabled == false) Future(Forbidden)
-    else {
-      val consoleRequest = userForm.bindFromRequest.get
-      val headers = parseHeadersFromConsole(consoleRequest.headers)
-      val path = if(consoleRequest.d2Path.trim().startsWith("/")) consoleRequest.d2Path.trim() else "/" + consoleRequest.d2Path.trim()
-      val d2request = WS.url(ExternalSites.createD2Url(path)).withHeaders(headers: _*)
-      if(d2request == null) throw new IllegalArgumentException("Malformed request path: " + path)
-      val promise = consoleRequest.httpMethod match {
-        case "POST" => d2request.post(consoleRequest.body)
-        case "PUT" => d2request.put(consoleRequest.body)
-        case "DELETE" => d2request.delete()
-        case "GET" => d2request.get()
-        case _ => throw new IllegalArgumentException("Malformed httpMethod")
-      }
+    loadCluster(clusterName)  flatMap { cluster =>
+      if (!cluster.isDefined) Future(NotFound)
+      else {
+        val serviceOpt = snapshot.findService(cluster.get, serviceKey)
+        if (!serviceOpt.isDefined) Future(NotFound)
+        else {
+          if(consoleEnabled == false) Future(Forbidden)
+          else {
+            val consoleRequest = userForm.bindFromRequest.get
+            val headers = parseHeadersFromConsole(consoleRequest.headers)
+            val path = if(consoleRequest.d2Path.trim().startsWith("/")) consoleRequest.d2Path.trim() else "/" + consoleRequest.d2Path.trim()
+            val d2request = WS.url(serviceOpt.get.getUrl /*ExternalSites.createD2Url(path)*/).withHeaders(headers: _*)
+            if(d2request == null) throw new IllegalArgumentException("Malformed request path: " + path)
+            val promise = consoleRequest.httpMethod match {
+              case "POST" => d2request.post(consoleRequest.body)
+              case "PUT" => d2request.put(consoleRequest.body)
+              case "DELETE" => d2request.delete()
+              case "GET" => d2request.get()
+              case _ => throw new IllegalArgumentException("Malformed httpMethod")
+            }
 
-      promise.map { d2response =>
-        val headers = d2response.ahcResponse.getHeaders.iterator().toList.map( h => h.getKey() + ": " + h.getValue().mkString(",")).mkString("\n")
-        val responseBody = if (d2response.body.startsWith("{")) {
-          Some("HTTP/1.1 " + d2response.status + " " + d2response.statusText + "\n" + headers + "\n\n" + prettyPrintJsonResponse(new JSONObject(d2response.body)))
-        } else {
-          Some("HTTP/1.1 " + d2response.status + " " + d2response.statusText + "\n" + headers + "\n\n" + d2response.body)
+            promise.map { d2response =>
+              val headers = d2response.ahcResponse.getHeaders.iterator().toList.map( h => h.getKey() + ": " + h.getValue().mkString(",")).mkString("\n")
+              val responseBody = if (d2response.body.startsWith("{")) {
+                Some("HTTP/1.1 " + d2response.status + " " + d2response.statusText + "\n" + headers + "\n\n" + prettyPrintJsonResponse(new JSONObject(d2response.body)))
+              } else {
+                Some("HTTP/1.1 " + d2response.status + " " + d2response.statusText + "\n" + headers + "\n\n" + d2response.body)
+              }
+              Ok(views.html.console(consoleRequest.httpMethod, consoleRequest.d2Path, consoleRequest.headers, Some(consoleRequest.body), responseBody, snapshot.metadata))
+            }
+          }
         }
-        Ok(views.html.console(consoleRequest.httpMethod, consoleRequest.d2Path, consoleRequest.headers, Some(consoleRequest.body), responseBody, snapshot.metadata))
       }
     }
   }
@@ -308,12 +317,12 @@ object Application extends Controller with ConsoleUtils {
 
     // add deco links to all URNs in response body
     val escaped = StringEscapeUtils.escapeHtml(prettyJson)
-    val prettyJsonWithLinks = "(\"|&quot;)(urn:li:.*)(\"|&quot;)".r.replaceAllIn(escaped, m => {
+    /*val escaped = "(\"|&quot;)(urn:li:.*)(\"|&quot;)".r.replaceAllIn(escaped, m => {
         val urn = m.group(2)
         "<a href=\"" + ExternalSites.createDecoUrl(urn) + "\">" + urn + "</a>"
       }
-    )
-    prettyJsonWithLinks
+    )*/
+    escaped
   }
 
   def searchResources = Action { request =>

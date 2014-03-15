@@ -26,7 +26,7 @@
               @Html(Application.subresources(cluster, service))
             </li>
           } else {
-            <li><a href="@ExternalSites.createUrlToRestdocs(cluster, service.getPath())">@service.getKey()</a></li>
+            <li>@service.getKey()</li>
           }
         }
       }

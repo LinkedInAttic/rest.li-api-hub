@@ -26,23 +26,28 @@ class SnapshotLoader() extends Runnable {
 
   private val dataLoadStrategy = config.getString("dataLoadStrategy", "zkCrawler")
   private val filesystemCacheDir = config.getString("filesystemCacheDir")
-  private val mixinResourcePath = config.getString("mixinResourcePath")
+  //private val mixinResourcePath = config.getString("mixinResourcePath")
+  private val urlList = config.getString("resourceUrls")
   private val zkHost = config.getString("zkHost")
   private val zkPort = config.getInt("zkPort")
   private val fabric = config.getString("fabric")
 
-  private lazy val crawlingZkLoader = new CrawlingDatasetLoaderProxy(new ZkDatasetLoader(zkHost, zkPort), new CrawlingIdlFetcher())
+  private lazy val crawlingZkLoader = new CrawlingDatasetLoaderProxy(new ZkDatasetLoader(zkHost, zkPort), new D2IdlFetcher())
+  private lazy val crawlingUrlListLoader = new CrawlingDatasetLoaderProxy(new UrlListDatasetLoader(urlList), new UrlIdlFetcher())
   //private lazy val crawlingExplorerLoader = new CrawlingDatasetLoaderProxy(new ExplorerDatasetLoader(), new CrawlingIdlFetcher())
 
   private val datasetLoader = dataLoadStrategy match {
     //case "explorerCrawler" => crawlingExplorerLoader
     case "zkCrawler" => crawlingZkLoader
     case "filesystemCached" => new FilesystemCachingDataLoaderProxy(crawlingZkLoader, filesystemCacheDir)
+    case "urlListCached" => new FilesystemCachingDataLoaderProxy(crawlingUrlListLoader, filesystemCacheDir)
+    case "urlCrawler" => crawlingUrlListLoader
     //case "explorerFilesystemCached" => new FilesystemCachingDataLoaderProxy(crawlingExplorerLoader, filesystemCacheDir)
     case "resource" => new ResourceDataLoader(filesystemCacheDir)
   }
 
-  private val loader = new MixinDataLoader(datasetLoader, mixinResourcePath)
+  //private val loader = new MixinDataLoader(datasetLoader, mixinResourcePath)
+  private val loader = datasetLoader
 
   // TODO: use play scheduler: http://www.playframework.com/documentation/2.1.0/ScalaAkka
   private val scheduledReloader : ScheduledExecutorService = new ScheduledThreadPoolExecutor(1)

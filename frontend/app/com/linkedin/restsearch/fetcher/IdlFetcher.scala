@@ -2,6 +2,7 @@ package com.linkedin.restsearch.fetcher
 
 import com.linkedin.data.schema.DataSchema
 import com.linkedin.restli.restspec.ResourceSchema
+import com.linkedin.restsearch.Service
 
 sealed abstract class ScrapeResult()
 case class SuccessfulScrape(val resourceSchema: ResourceSchema, val dataSchemas: Map[String, DataSchema]) extends ScrapeResult()
@@ -16,5 +17,5 @@ case class FailedScrape(val ex: Throwable) extends ScrapeResult() {
  *
  */
 trait IdlFetcher {
-  def fetch(serviceKey: String, servicePath: String): ScrapeResult
+  def fetch(service: Service): ScrapeResult
 }

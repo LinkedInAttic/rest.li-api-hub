@@ -18,7 +18,7 @@ import com.linkedin.restsearch.template.utils.Conversions._
  *
  */
 class CrawlingDatasetLoaderProxy(underlying: DatasetLoader, crawler: IdlFetcher) extends DatasetLoader {
-  
+
   override def loadDataset(isStartup: Boolean): Dataset =  {
     val dataset = underlying.loadDataset(isStartup)
     if(!dataset.hasServiceErrors) {
@@ -33,7 +33,7 @@ class CrawlingDatasetLoaderProxy(underlying: DatasetLoader, crawler: IdlFetcher)
     Logger.info("Crawling service docgen for idl...")
 
     services.values filter { s => s.hasKey && s.hasPath } foreach { service =>
-      crawler.fetch(service.getKey, service.getPath) match {
+      crawler.fetch(service) match {
         case (scrape: SuccessfulScrape) => {
           service.setResourceSchema(scrape.resourceSchema)
           val dataSchemas = scrape.dataSchemas.mapValues(_.toString)

@@ -22,7 +22,7 @@ class Snapshot(
   dataset: Dataset,
   val refreshedAt: Long,
   val searchIndex: SearchIndex) {
-   
+
   val clusters = dataset.getClusters().toMap
   val services = dataset.servicesMap
   val serviceErrors = dataset.getServiceErrors().toMap
@@ -33,10 +33,9 @@ class Snapshot(
     metadata.put("totalClusters", clusters.values.filter(_.isPrimaryColoVariant).size.asInstanceOf[java.lang.Integer])
     metadata.put("totalErrors", serviceErrors.size.asInstanceOf[java.lang.Integer])
     metadata.put("refreshedAt", refreshedAt.asInstanceOf[java.lang.Long])
-    metadata.put("fabric", Play.application().configuration().getString("fabric"))
     metadata
   }
-  
+
   def search(pagingContext: PagingContext, queryString: String): CollectionResult[Service, ServiceQueryMetadata] = {
     val results = if (queryString == null || queryString.trim().equals("")) {
         collectionAsScalaIterable(services.values)
@@ -59,18 +58,18 @@ class Snapshot(
     val resultPage = results.slice(fromIndex, toIndex)
     new CollectionResult[Service, ServiceQueryMetadata](seqAsJavaList(resultPage.toSeq), int2Integer(results.size), metadata)
   }
-  
+
   private def isValidSearchResult(service: Service) = {
     !service.hasPath() || {
       val path = service.getPath().trim()
       (!path.equals("/") && !path.equals(""))
     }
   }
-  
+
   def findCluster(name: String) : Option[Cluster] = {
     clusters.values.find(_.getName() == name)
   }
-  
+
   def findService(cluster: Cluster, serviceKey: String) : Option[Service] = {
     try {
       val serviceKeyParts = serviceKey.split("\\.").toList
@@ -94,19 +93,19 @@ class Snapshot(
       }
     }
   }
-  
+
   /**
-   * TODO:  We should index this information upfront so we don't have to do this recursive search routine 
+   * TODO:  We should index this information upfront so we don't have to do this recursive search routine
    * here and so we can avoid constructing new service instances for all the subresources on each request.
-   * 
+   *
    * Create a list of Services from the root Service down to the correct subresource according to the resource keys in resourcePath.
-   * 
+   *
    * E.g.  given the "threadsBackend" service as root and List("comments", "likes") for UscpBackend, this routine will return a list of the form:
    * List(
    *   <existing threadsBackend service that is passed in as root>,
    *   <new service instance for "comments" with parent set to "threadsBackend">,
    *   <new service instance for "likes" with parent set to "comments">)
-   * 
+   *
    */
   private def findSubresourcesAlongPath(rootService: Service, resourcePathKeys: List[String]): List[Service] = {
     def find(currentService: Service, visitedPathKeys: List[String], reaminingPathKeys: List[String]): List[Service] = {
@@ -128,7 +127,7 @@ class Snapshot(
         }
       }
     }
-    
+
     find(rootService, List(), resourcePathKeys)
   }
 

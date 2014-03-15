@@ -8,11 +8,7 @@
     <li><a href="@routes.Application.service(cluster.getName(), service.getKey())">@service.getKey() Resource</a> <span class="divider"></span></li>
     <li class="active">@dataSchema.getName Model</li>
   </ul>
-  
-  <div class="pull-right">
-    <p><a role="button" class="btn btn-link" href="@ExternalSites.createUrlToRestdocsModel(cluster, dataSchema.getFullName)">Model Documentation</a></p>
-  </div>
-  
+
   <h2 @if(dataSchema.getProperties().contains("deprecated")){style="text-decoration:line-through"}>@dataSchema.getName</h2>
 
   @if(dataSchema.getProperties().contains("deprecated")){
@@ -28,12 +24,12 @@
   }
 
   @dataSchema match {
-    case named: NamedDataSchema => { 
+    case named: NamedDataSchema => {
       <p>@Html(named.getDoc())</p>
     }
   }
-  
-   
+
+
   <ul id="model-tabs" class="nav nav-tabs">
     <li><a id="fields-tab" href="#fields-view" data-toggle="tab">Structure</a></li>
     <li><a id="json-tab" href="#json-schema-view" data-toggle="tab">JSON Schema</a></li>
@@ -47,6 +43,6 @@
       <pre class="prettyprint lang-js">@modelJsonRaw</pre>
     </div>
   </div>
-   
+
   <script type="text/javascript" src="@routes.Assets.at("javascripts/modeldetails.js")"></script>
 }
