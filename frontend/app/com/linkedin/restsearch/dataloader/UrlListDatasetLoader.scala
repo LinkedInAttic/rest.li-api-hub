@@ -20,7 +20,9 @@ import play.{Logger, Play}
 import com.linkedin.restsearch._
 import com.linkedin.restliexplorer.D2Service
 
-class UrlListDatasetLoader(urlList: String) extends DatasetLoader {
+class UrlListDatasetLoader extends DatasetLoader {
+  private val urlList = Play.application().configuration().getString("resourceUrls")
+
   def loadDataset(isStartup: Boolean): Dataset = {
     val dataset = new Dataset()
     val clusters = new ClusterMap()

@@ -37,7 +37,7 @@ import org.apache.lucene.document.DateTools.Resolution
 import java.util.Date
 
 object LuceneSearchIndex {
-  val luceneVersion = Version.LUCENE_47
+  val luceneVersion = Version.LUCENE_42
   val searchAnalyzer: Analyzer = new RestSearchAnalyzer(luceneVersion)
   val analyzer: Analyzer = new RestIndexingAnalyzer(luceneVersion)
 }

@@ -5,6 +5,10 @@ import com.linkedin.sbt._
 
 import scala.xml.transform.RewriteRule
 
+// javax.jms#jms;1.1!jms.jar
+// com.sun.jdmk#jmxtools;1.2.1!jmxtools.jar
+// com.sun.jmx#jmxri;1.2.1!jmxri.jar
+
 object ApplicationBuild extends Build with restli.All {
 
   val baseSettings =  super.settings ++ org.sbtidea.SbtIdeaPlugin.settings ++ Seq(
@@ -19,11 +23,15 @@ object ApplicationBuild extends Build with restli.All {
   val appDependencies = Seq(
     "com.fasterxml.jackson.module" % "jackson-module-scala_2.10" % "2.2.2",
     "com.typesafe.play" % "play-cache_2.10" % "2.2.1",
-    "joda-time" % "joda-time" % "2.1",
-    "org.apache.zookeeper" % "zookeeper" % "3.4.6",
-    "org.apache.lucene" % "lucene-core" % "4.7.0",
-    "org.apache.lucene" % "lucene-analyzers-common" % "4.7.0",
-    "org.apache.lucene" % "lucene-queryparser" % "4.7.0",
+    "joda-time" % "joda-time" % "2.2",
+    "org.apache.zookeeper" % "zookeeper" % "3.4.2" excludeAll(
+      ExclusionRule(organization = "com.sun.jdmk"),
+      ExclusionRule(organization = "com.sun.jmx"),
+      ExclusionRule(organization = "javax.jms")
+    ),
+    "org.apache.lucene" % "lucene-core" % "4.2.0",
+    "org.apache.lucene" % "lucene-analyzers-common" % "4.2.0",
+    "org.apache.lucene" % "lucene-queryparser" % "4.2.0",
     "com.linkedin.pegasus" % "restli-common" % "1.15.0",
     "com.linkedin.pegasus" % "restli-client" % "1.15.0",
     "com.linkedin.pegasus" % "restli-server" % "1.15.0",

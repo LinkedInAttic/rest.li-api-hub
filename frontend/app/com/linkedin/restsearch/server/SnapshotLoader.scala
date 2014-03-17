@@ -40,29 +40,27 @@ object SnapshotLoader {
  */
 class SnapshotLoader() extends Runnable {
 
-  private val dataLoadStrategy = config.getString("dataLoadStrategy", "zkCrawler")
+  private val dataLoadStrategy = config.getString("dataLoadStrategy", "crawler")
   private val filesystemCacheDir = config.getString("filesystemCacheDir")
   //private val mixinResourcePath = config.getString("mixinResourcePath")
-  private val urlList = config.getString("resourceUrls")
+
   private val zkHost = config.getString("zkHost")
   private val zkPort = config.getInt("zkPort")
   private val fabric = config.getString("fabric")
+  private val loaderClass = config.getString("loaderClass")
+  private val fetcherClass = config.getString("fetcherClass")
 
-  private lazy val crawlingZkLoader = new CrawlingDatasetLoaderProxy(new ZkDatasetLoader(zkHost, zkPort), new D2IdlFetcher())
-  private lazy val crawlingUrlListLoader = new CrawlingDatasetLoaderProxy(new UrlListDatasetLoader(urlList), new UrlIdlFetcher())
-  //private lazy val crawlingExplorerLoader = new CrawlingDatasetLoaderProxy(new ExplorerDatasetLoader(), new CrawlingIdlFetcher())
+  private lazy val loaderInstance = Class.forName(loaderClass).newInstance().asInstanceOf[DatasetLoader]
+  private lazy val fetcherInstance = Class.forName(fetcherClass).newInstance().asInstanceOf[IdlFetcher]
+
+  private lazy val crawlingLoader = new CrawlingDatasetLoaderProxy(loaderInstance, fetcherInstance)
 
   private val datasetLoader = dataLoadStrategy match {
-    //case "explorerCrawler" => crawlingExplorerLoader
-    case "zkCrawler" => crawlingZkLoader
-    case "zkCrawlerFilesystemCached" => new FilesystemCachingDataLoaderProxy(crawlingZkLoader, filesystemCacheDir)
-    case "urlCrawler" => crawlingUrlListLoader
-    case "urlCrawlerFilesystemCached" => new FilesystemCachingDataLoaderProxy(crawlingUrlListLoader, filesystemCacheDir)
-    //case "explorerFilesystemCached" => new FilesystemCachingDataLoaderProxy(crawlingExplorerLoader, filesystemCacheDir)
+    case "crawler" => crawlingLoader
+    case "crawlerFilesystemCached" => new FilesystemCachingDataLoaderProxy(crawlingLoader, filesystemCacheDir)
     case "resource" => new ResourceDataLoader(filesystemCacheDir)
   }
 
-  //private val loader = new MixinDataLoader(datasetLoader, mixinResourcePath)
   private val loader = datasetLoader
 
   // TODO: use play scheduler: http://www.playframework.com/documentation/2.1.0/ScalaAkka
