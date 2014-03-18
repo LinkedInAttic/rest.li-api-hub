@@ -10,3 +10,9 @@ Add extension point so that the mixin loader can be used internally and a UI mod
 Remove all references to EI, EI2, ...
 
 Opensource the play rest.li plugin and use it in D2IdlFetcher and UrlIdlFetcher
+
+Testing:
+
+[ ] gist
+[ ] api console
+[ ] links checker
