@@ -22,7 +22,8 @@ import com.linkedin.restsearch.fetcher._
 import com.linkedin.restsearch.search._
 import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicReference
-import play.{Logger, Play}
+import play.api.{Logger, Play}
+import play.api.Play.current
 import scala.collection.JavaConversions._
 import SnapshotLoader._
 import com.linkedin.data.template.StringMap
@@ -30,7 +31,7 @@ import com.linkedin.restsearch.template.utils.Conversions._
 
 object SnapshotLoader {
   val REFRESH_INTERVAL_MINUTES = 15
-  val config = Play.application().configuration()
+  val config = Play.application.configuration
 }
 
 /**
@@ -40,15 +41,12 @@ object SnapshotLoader {
  */
 class SnapshotLoader() extends Runnable {
 
-  private val dataLoadStrategy = config.getString("dataLoadStrategy", "crawler")
+  private val dataLoadStrategy = config.getString("dataLoadStrategy").getOrElse("crawler")
   private val filesystemCacheDir = config.getString("filesystemCacheDir")
-  //private val mixinResourcePath = config.getString("mixinResourcePath")
 
-  private val zkHost = config.getString("zkHost")
-  private val zkPort = config.getInt("zkPort")
   private val fabric = config.getString("fabric")
-  private val loaderClass = config.getString("loaderClass")
-  private val fetcherClass = config.getString("fetcherClass")
+  private val loaderClass = config.getString("loaderClass").getOrElse(classOf[UrlListDatasetLoader].getName)
+  private val fetcherClass = config.getString("fetcherClass").getOrElse(classOf[UrlIdlFetcher].getName)
 
   private lazy val loaderInstance = Class.forName(loaderClass).newInstance().asInstanceOf[DatasetLoader]
   private lazy val fetcherInstance = Class.forName(fetcherClass).newInstance().asInstanceOf[IdlFetcher]
@@ -57,8 +55,20 @@ class SnapshotLoader() extends Runnable {
 
   private val datasetLoader = dataLoadStrategy match {
     case "crawler" => crawlingLoader
-    case "crawlerFilesystemCached" => new FilesystemCachingDataLoaderProxy(crawlingLoader, filesystemCacheDir)
-    case "resource" => new ResourceDataLoader(filesystemCacheDir)
+    case "crawlerFilesystemCached" => {
+      if(filesystemCacheDir.isEmpty) {
+        throw new IllegalArgumentException("filesystemCacheDir configuration property must be set when using 'crawlerFilesystemCached' dataLoadStrategy")
+      } else {
+        new FilesystemCachingDataLoaderProxy(crawlingLoader, filesystemCacheDir.get)
+      }
+    }
+    case "resource" => {
+      if(filesystemCacheDir.isEmpty) {
+        throw new IllegalArgumentException("filesystemCacheDir configuration property must be set to a relative project path when using 'resource' dataLoadStrategy")
+      } else {
+        new ResourceDataLoader(filesystemCacheDir.get)
+      }
+    }
   }
 
   private val loader = datasetLoader

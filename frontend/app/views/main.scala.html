@@ -1,4 +1,5 @@
 @(title: String, includeNavSearch: Boolean = true)(content: Html)
+@import play.Play
 
 <!DOCTYPE html>
 
@@ -35,27 +36,16 @@
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">Documentation <b class="caret"></b></a>
             <ul class="dropdown-menu" role="menu">
-              <li><a href="https://github.com/linkedin/rest.li/wiki/Rest.li-User-Guide">Rest.li User Guide</a></li>
-              <li><a href="https://iwww.corp.linkedin.com/wiki/cf/display/ENGS/Rest.li+Multiproduct+Quickstart">Rest.li Multiproduct Quickstart</a></li>
-              <li><a href="https://iwww.corp.linkedin.com/wiki/cf/display/ENGS/RestLi+In+Network+-+Cookbook">Rest.li In Network Quickstart</a></li>
-              <li><a href="https://iwww.corp.linkedin.com/wiki/cf/display/ENGS/Rest.li+Client+Quickstart">Rest.li Client Quickstart</a></li>
-              <li><a href="https://github.com/linkedin/rest.li/wiki/Rest.li-Protocol">Rest.li HTTP Protocol Definition</a></li>
-              <li><a href="https://github.com/linkedin/rest.li/wiki/DATA-Data-Schema-and-Templates">Pegaus Data (aka PDSC)</a></li>
-              <li><a href="https://iwww.corp.linkedin.com/wiki/cf/pages/viewpage.action?pageId=46019762">Rest.li FAQ</a></li>
-              <li><a href="https://iwww.corp.linkedin.com/wiki/cf/display/ENGS/Pegasus+Schema+FAQ">Pegasus Schema (.pdsc) FAQ</a></li>
-              <li><a href="https://iwww.corp.linkedin.com/wiki/cf/display/ENGS/Rest+and+Data+Model+Home">REST and Data Modeling wiki</a></li>
-              <li><a href="https://iwww.corp.linkedin.com/wiki/cf/display/ENGS/HOW-TO+Model+Your+Resources+in+Rest.li">How To Model Resources</a></li>
-              <li><a href="https://iwww.corp.linkedin.com/wiki/cf/display/ENGS/Rest.li">Rest.li team wiki</a></li>
-              <li><a href="https://iwww.corp.linkedin.com/wiki/cf/display/ENGS/URN+Registry">URN Registry</a></li>
-              <li><a href="https://iwww.corp.linkedin.com/wiki/cf/display/ENGS/Rest.li+Common+Models">Common Models</a></li>
-              <li><a href="https://iwww.corp.linkedin.com/wiki/cf/display/ENGS/Queue+for+upcoming+REST+Reviews">REST Review</a></li>
+              @Play.application().configuration().getObjectList("docLinks").map { entry =>
+                <li><a href="@entry.get("url")">@entry.get("name")</a></li>
+              }
               <li><a href="@routes.Application.errors">Known errors</a></li>
             </ul>
           </li>
         </ul>
       </div>
     </div> @* navbar *@
-      
+
     <div class="container">
       @content
     </div>

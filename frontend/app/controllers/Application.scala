@@ -29,7 +29,8 @@ import play.api.data.Forms._
 import play.api.libs.ws.WS
 import play.api.libs.concurrent.Execution.Implicits._
 import org.json.JSONObject
-import play.Play
+import play.api.Play
+import play.api.Play.current
 import com.linkedin.restsearch.server.ServiceModelsSchemaResolver
 import com.linkedin.restsearch.plugins.SnapshotInitPlugin
 import org.apache.commons.lang.StringEscapeUtils
@@ -38,16 +39,12 @@ import play.api.libs.json.Json
 import com.linkedin.jersey.api.uri.UriBuilder
 import java.net.URI
 import com.linkedin.restsearch.permlink._
-import scala.Some
 import java.lang.StringBuilder
 import com.linkedin.restsearch.template.utils.Conversions._
 import com.linkedin.data.codec.JacksonDataCodec
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter
 import scala.concurrent.Future
-import com.linkedin.restli.client
-import com.linkedin.restli.client.uribuilders.RestliUriBuilderUtil
-import com.linkedin.restli.internal.server.util.DataMapUtils
-import com.linkedin.restli.docgen.examplegen.{ExampleRequestResponse, ExampleRequestResponseGenerator}
+import com.linkedin.restli.docgen.examplegen.ExampleRequestResponse
 import scala.Some
 import play.api.mvc.SimpleResult
 
@@ -60,9 +57,9 @@ object Application extends Controller with ConsoleUtils {
 
   def snapshot = SnapshotInitPlugin.getInstance.snapshotLoader.currentSnapshot
 
-  private val config = Play.application().configuration()
-  private val consoleEnabled = config.getBoolean("consoleEnabled")
-  private lazy val pastebinClientClass = config.getString("pastebinClientClass", "com.linkedin.restsearch.permlink.GistClient")
+  private val config = Play.application.configuration
+  private val consoleEnabled = config.getBoolean("consoleEnabled").getOrElse("false")
+  private lazy val pastebinClientClass = config.getString("pastebinClientClass").getOrElse("com.linkedin.restsearch.permlink.GistClient")
   private lazy val pastebinClient = Class.forName(pastebinClientClass).newInstance().asInstanceOf[PastebinClient]
   private lazy val clusterPermlinkClient = new ClusterPermlinkClient(pastebinClient)
 
