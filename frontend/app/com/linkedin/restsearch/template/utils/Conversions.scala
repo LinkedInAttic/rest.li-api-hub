@@ -19,6 +19,7 @@ package com.linkedin.restsearch.template.utils
 import com.linkedin.restli.restspec._
 import com.linkedin.restsearch.{Dataset, ClusterSource, Cluster, Service}
 import scala.Some
+import scala.collection.JavaConverters._
 import scala.collection.JavaConversions._
 import com.linkedin.restsearch.template.utils.Conversions._
 import com.linkedin.restsearch.server.{SnapshotSchemaResolver, ServiceModelsSchemaResolver}
@@ -29,11 +30,15 @@ import com.linkedin.restli.docgen.examplegen.ExampleRequestResponseGenerator
 import com.linkedin.r2.message.rest.{RestResponse, RestRequest}
 import com.linkedin.restli.common.RestConstants
 import java.lang.IllegalArgumentException
+import play.api.Play
+import play.api.Play.current
 
 /**
  * Use implicit conversions to mix in additional utility methods to the data template classes used by go/restli.
  */
 object Conversions {
+  lazy val knownColoVariantSuffixes = Play.application.configuration.getStringList("coloVariantSuffixes").map(_.asScala).getOrElse(Nil)
+
   implicit def toRichDataset(dataset: Dataset) = new RichDataset(dataset)
   implicit def toRichCluster(cluster: Cluster) = new RichCluster(cluster)
   implicit def toRichService(service: Service) = new RichService(service)
@@ -47,8 +52,6 @@ object Conversions {
 
 
 trait ColoVariantAware {
-  val knownColoVariantSuffixes = List("Master", "-EI", "-EI1", "-EI2", "-LVA1", "-ECH3", "-ELA4")
-
   def coloVariantIdentifier: String
   def isPrimaryColoVariant: Boolean
 
