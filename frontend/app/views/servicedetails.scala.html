@@ -260,7 +260,7 @@
       </div>*@
 
       @methods.toList.zipWithIndex.map { case(method, index) =>
-        @defining(try {exampleGenerator.map(_.method(ResourceMethod.valueOf(method.getMethod.toUpperCase))) } catch { case e => None } ) { exampleOpt =>
+        @defining(try {exampleGenerator.map(_.method(ResourceMethod.valueOf(method.getMethod.toUpperCase))) } catch { case e: Throwable => None } ) { exampleOpt =>
           <div class="panel panel-default">
             <div class="panel-heading">
               @if(cluster.getSource == ClusterSource.D2 && exampleOpt.isDefined) {
@@ -302,7 +302,7 @@
   @if(finders != null && finders.size() > 0) {
     <section id="finders">
       @finders.toList.zipWithIndex.map { case(finder, index) =>
-        @defining(try {exampleGenerator.map(_.finder(finder.getName)) } catch { case e => None } ) { requestOpt =>
+        @defining(try {exampleGenerator.map(_.finder(finder.getName)) } catch { case e: Throwable => None } ) { requestOpt =>
           <div class="panel panel-default">
             <div class="panel-heading">
               @if(cluster.getSource == ClusterSource.D2 && requestOpt.isDefined) {
@@ -358,7 +358,7 @@
   @if(actions != null && actions.size() > 0) {
     <section id="actions">
       @actions.toList.zipWithIndex.map { case(action, index) =>
-        @defining( try { exampleGenerator.map(_.action(action.getName, if(entityPath.isDefined) ResourceLevel.ENTITY else ResourceLevel.COLLECTION)) } catch { case e => None } ) { requestOpt =>
+        @defining( try { exampleGenerator.map(_.action(action.getName, if(entityPath.isDefined) ResourceLevel.ENTITY else ResourceLevel.COLLECTION)) } catch { case e: Throwable => None } ) { requestOpt =>
           <div class="panel panel-default">
             <div class="panel-heading">
               @if(cluster.getSource == ClusterSource.D2 && requestOpt.isDefined) {

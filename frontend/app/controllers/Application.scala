@@ -37,7 +37,7 @@ import play.api.mvc.Action
 import play.api.libs.json.Json
 import com.linkedin.jersey.api.uri.UriBuilder
 import java.net.URI
-import com.linkedin.restsearch.permlink.{SnapshotUploadException, PasteInException, CachingPasteInClient, ClusterPermlinkClient}
+import com.linkedin.restsearch.permlink._
 import scala.Some
 import java.lang.StringBuilder
 import com.linkedin.restsearch.template.utils.Conversions._
@@ -48,6 +48,8 @@ import com.linkedin.restli.client
 import com.linkedin.restli.client.uribuilders.RestliUriBuilderUtil
 import com.linkedin.restli.internal.server.util.DataMapUtils
 import com.linkedin.restli.docgen.examplegen.{ExampleRequestResponse, ExampleRequestResponseGenerator}
+import scala.Some
+import play.api.mvc.SimpleResult
 
 object Application extends Controller with ConsoleUtils {
   val resultsPerPage = 20
@@ -60,6 +62,9 @@ object Application extends Controller with ConsoleUtils {
 
   private val config = Play.application().configuration()
   private val consoleEnabled = config.getBoolean("consoleEnabled")
+  private lazy val pastebinClientClass = config.getString("pastebinClientClass", "com.linkedin.restsearch.permlink.GistClient")
+  private lazy val pastebinClient = Class.forName(pastebinClientClass).newInstance().asInstanceOf[PastebinClient]
+  private lazy val clusterPermlinkClient = new ClusterPermlinkClient(pastebinClient)
 
   def index = Action { request =>
     Ok(views.html.clusterlist(snapshot.allClusters, snapshot.metadata))
@@ -78,7 +83,7 @@ object Application extends Controller with ConsoleUtils {
       case Some(file) => {
         val snapshot = io.Source.fromFile(file.ref.file).mkString
         try {
-          val promise = ClusterPermlinkClient.write(snapshot)
+          val promise = clusterPermlinkClient.write(snapshot)
           promise.map { permlink =>
             Redirect(routes.Application.cluster("permlink:" + permlink))
           }
@@ -169,7 +174,7 @@ object Application extends Controller with ConsoleUtils {
 
   private def loadCluster(clusterName: String): Future[Option[Cluster]] = {
     if (clusterName.startsWith("permlink:")) {
-      ClusterPermlinkClient.read(clusterName.substring("permlink:".length)).map(Some(_))
+      clusterPermlinkClient.read(clusterName.substring("permlink:".length)).map(Some(_))
     } else {
       Future(snapshot.findCluster(clusterName))
     }
@@ -225,7 +230,7 @@ object Application extends Controller with ConsoleUtils {
     if(consoleEnabled == false) Future(Forbidden)
     else {
       try {
-        CachingPasteInClient.load(permlink) map { pasteCodeStr =>
+        pastebinClient.load(permlink) map { pasteCodeStr =>
           val pasteCodeJson = Json.parse(pasteCodeStr)
           val httpMethod = (pasteCodeJson \ "httpMethod").as[String]
           val d2Path = (pasteCodeJson \ "d2Path").as[String]
@@ -235,7 +240,7 @@ object Application extends Controller with ConsoleUtils {
           Ok(views.html.console(httpMethod, d2Path, headers, requestBody, responseBody, snapshot.metadata))
         }
       } catch {
-        case e: PasteInException => {
+        case e: PastebinException => {
           Future(InternalServerError(e.getMessage))
         }
       }
@@ -307,15 +312,15 @@ object Application extends Controller with ConsoleUtils {
   def newPermlink = Action.async { implicit request =>
     val consoleRequest = userForm.bindFromRequest.get
     val pasteCode = JsonUtil.pojoAsJsonString(consoleRequest)
-    CachingPasteInClient.store(pasteCode)
+    pastebinClient.store(pasteCode)
     try {
-      CachingPasteInClient.store(pasteCode).map { pasteId =>
+      pastebinClient.store(pasteCode).map { pasteId =>
         val origin = request.body.asFormUrlEncoded.get.get("origin").get.head
         val permlinkUri = UriBuilder.fromUri(new URI(origin)).queryParam("permlink", pasteId).build()
         Ok(permlinkUri.toString)
       }
     } catch {
-      case e: PasteInException => {
+      case e: PastebinException => {
         Future(InternalServerError(e.getMessage))
       }
     }

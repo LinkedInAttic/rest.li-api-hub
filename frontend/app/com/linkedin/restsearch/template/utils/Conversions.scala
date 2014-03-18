@@ -174,7 +174,7 @@ class RichService(service: Service) extends ColoVariantAware {
       Some(new ExampleRequestResponseGenerator(service.getParents.map(_.getResourceSchema), service.getResourceSchema, resolver))
     } catch {
       case iae: IllegalArgumentException => None // workaround until fix in https://rb.corp.linkedin.com/r/255178/ is rolled out
-      case e => throw e
+      case e: Throwable => throw e
     }
   }
 

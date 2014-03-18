@@ -27,19 +27,19 @@ import play.api.libs.concurrent.Execution.Implicits._
 import com.linkedin.restliexplorer.{D2Service, D2Cluster}
 
 /**
- * Uses the CachingPasteInClient to store Cluster information in go/pastein.
+ * Uses a pastebin to store Cluster information.
  */
-object ClusterPermlinkClient {
+class ClusterPermlinkClient(pastebinClient: PastebinClient) {
 
   def read(permlink: String): Future[Cluster] = {
-    CachingPasteInClient.load(permlink) map { jsonStr =>
+    pastebinClient.load(permlink) map { jsonStr =>
       parse(permlink, new JSONObject(jsonStr))
     }
   }
 
   def write(snapshot: String): Future[String] = {
-    parse("upload_in_progress", new JSONObject(snapshot)) // validate before storing in pasteIn by parsing.  Will throw exception if parsing fails
-    CachingPasteInClient.store(snapshot)
+    parse("upload_in_progress", new JSONObject(snapshot)) // validate before storing in a pastebin by parsing.  Will throw exception if parsing fails
+    pastebinClient.store(snapshot)
   }
 
   private def parse(permlink: String, json: JSONObject): Cluster = {

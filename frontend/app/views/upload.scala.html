@@ -26,22 +26,11 @@
           </form>
         </div>
 
-        <br/><br/>
-        <div>
-          <p>
-              Example permlink: <a href="@routes.Application.service("permlink:30344","complexKeys")">permlink:30344</a>.
-          </p>
-
-          <p>
-            Snapshot files are located in the source directories of api modules after they are built
-            (e.g. <code>ligradle build</code> or <code>ligradle publishRestliSnapshot</code>).  For MPs, this is usually
-            <code>{api-project}/src/main/snapshot</code>.
-          </p>
-
-          <p>
-              Your snapshot file will be stored in <a href="http://go/pastein">go/pastein</a> and you will be redirected to a permlink URL that can be shared.
-          </p>
-        </div>
+        <p>
+          Snapshot files are located in the source directories of api modules after they are built
+          (e.g. <code>gradle build</code> or <code>gradle publishRestliSnapshot</code>).  This is usually
+          <code>{api-project}/src/main/snapshot</code>.
+        </p>
       </div>
     </div>
   </div>
