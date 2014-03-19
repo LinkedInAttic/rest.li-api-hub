@@ -1,6 +1,6 @@
 //NOTE: we are not using SafeModuleDependencies to avoid adding the sbt-infrastrcture in the project/project/plugins.sbt because it is not needed for this module
 
-resolvers += Resolver.file("Local Ivy Repository", file(Path.userHome + "/.ivy2/local"))(Resolver.ivyStylePatterns)
+resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
 
 resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 

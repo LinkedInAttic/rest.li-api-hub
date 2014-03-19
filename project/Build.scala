@@ -15,7 +15,6 @@ object ApplicationBuild extends Build with restli.All {
     organization := "com.linkedin.pegasus.gorestli",
     version := "0.0.1",
     name := "restli-apihub",
-    resolvers += Resolver.file("Local Ivy Repository", file(Path.userHome + "/.ivy2/local"))(Resolver.ivyStylePatterns),
     resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
     resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
   )
@@ -32,10 +31,10 @@ object ApplicationBuild extends Build with restli.All {
     "org.apache.lucene" % "lucene-core" % "4.2.0",
     "org.apache.lucene" % "lucene-analyzers-common" % "4.2.0",
     "org.apache.lucene" % "lucene-queryparser" % "4.2.0",
-    "com.linkedin.pegasus" % "restli-common" % "1.15.2",
-    "com.linkedin.pegasus" % "restli-client" % "1.15.2",
-    "com.linkedin.pegasus" % "restli-server" % "1.15.2",
-    "com.linkedin.pegasus" % "restli-docgen" % "1.15.2"
+    "com.linkedin.pegasus" % "restli-common" % "1.15.3",
+    "com.linkedin.pegasus" % "restli-client" % "1.15.3",
+    "com.linkedin.pegasus" % "restli-server" % "1.15.3",
+    "com.linkedin.pegasus" % "restli-docgen" % "1.15.3"
   )
 
   lazy val main = play.Project("rest-search-frontend", path=file("frontend"))
@@ -46,9 +45,9 @@ object ApplicationBuild extends Build with restli.All {
 
   lazy val dataTemplates = play.Project("rest-search-data-templates", path=file("data-templates"))
     .compilePegasus()
-    .settings(libraryDependencies += "com.linkedin.pegasus" % "data" % "1.15.2")
-    .settings(libraryDependencies += "com.linkedin.pegasus" % "restli-common" % "1.15.2")
-    .settings(libraryDependencies += "com.linkedin.pegasus" % "d2Schemas" % "1.15.2" % "compile->dataTemplate")
+    .settings(libraryDependencies += "com.linkedin.pegasus" % "data" % "1.15.3")
+    .settings(libraryDependencies += "com.linkedin.pegasus" % "restli-common" % "1.15.3")
+    .settings(libraryDependencies += "com.linkedin.pegasus" % "d2-schemas" % "1.15.3")
     .settings(baseSettings: _*)
 
   override lazy val rootProject = Some(main)
