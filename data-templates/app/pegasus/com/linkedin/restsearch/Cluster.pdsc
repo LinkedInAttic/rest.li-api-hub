@@ -18,7 +18,7 @@
     },
     {
       "name": "d2Cluster",
-      "type": "com.linkedin.restliexplorer.D2Cluster",
+      "type": "com.linkedin.d2.D2Cluster",
       "optional": true
     },
     {

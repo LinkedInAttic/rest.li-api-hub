@@ -25,7 +25,7 @@ import org.apache.zookeeper.{WatchedEvent, ZooKeeper, Watcher}
 import play.api.Logger
 import com.linkedin.restsearch.dataloader.ZkDatasetLoader._
 import java.util.concurrent.CountDownLatch
-import com.linkedin.restliexplorer.{D2Uri, D2UriArray, D2Cluster}
+import com.linkedin.d2.{D2Uri, D2UriArray, D2Cluster}
 import java.net.URI
 import org.apache.zookeeper.data.Stat
 

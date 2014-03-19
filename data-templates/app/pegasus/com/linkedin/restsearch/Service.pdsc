@@ -26,7 +26,7 @@
     },
     {
       "name": "d2Service",
-      "type": "com.linkedin.restliexplorer.D2Service",
+      "type": "com.linkedin.d2.D2Service",
       "optional": true
     },
     {

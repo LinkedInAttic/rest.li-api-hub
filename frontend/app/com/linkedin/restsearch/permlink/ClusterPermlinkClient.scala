@@ -24,7 +24,7 @@ import java.io.ByteArrayInputStream
 import com.linkedin.data.template.StringMap
 import scala.concurrent.Future
 import play.api.libs.concurrent.Execution.Implicits._
-import com.linkedin.restliexplorer.{D2Service, D2Cluster}
+import com.linkedin.d2.{D2Service, D2Cluster}
 
 /**
  * Uses a pastebin to store Cluster information.

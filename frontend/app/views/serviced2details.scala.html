@@ -1,4 +1,4 @@
-@(d2Service: com.linkedin.restliexplorer.D2Service, createdAt: Long, modifiedAt: Option[Long])
+@(d2Service: com.linkedin.d2.D2Service, createdAt: Long, modifiedAt: Option[Long])
 
 @import org.joda.time.DateTime
 @import com.linkedin.data.template.StringArray
@@ -25,11 +25,11 @@
         </div>
       </div>
       <div class="modal-body">
-        @*@if(d2Service.hasBannedUris && d2Service.getBannedUris.nonEmpty) {
+        @if(d2Service.hasBannedUris && d2Service.getBannedUris.nonEmpty) {
           <div class="padded">
             @displayBannedUris(d2Service.getBannedUris)
           </div>
-        }*@
+        }
         @if(d2Service.hasDegraderProperties) {
           <div class="padded">
             @d2PropertiesTable("Degrader Property", d2Service.getDegraderProperties().data())
@@ -68,25 +68,23 @@
   </div>
 </div>
 
-@displayLoadBalancerStrategies(strategies: com.linkedin.restliexplorer.LoadBalancerStrategyTypeArray) = {
+@displayLoadBalancerStrategies(strategies: com.linkedin.d2.LoadBalancerStrategyTypeArray) = {
   <b>Load Balancer Strategies: </b>
   @strategies.map { strategy =>
     @(strategy + " ")
   }
 }
 
-@displaySchemes(schemes: com.linkedin.restliexplorer.SchemeArray) = {
+@displaySchemes(schemes: com.linkedin.d2.SchemeArray) = {
   <b>Prioritized schemes: </b>
   @schemes.map { scheme =>
     @(scheme + " ")
   }
 }
 
-@*
 @displayBannedUris(uris: StringArray) = {
   <b>Banned URIs: </b>
   @uris.map { uri =>
     @(uri + " ")
   }
 }
-*@

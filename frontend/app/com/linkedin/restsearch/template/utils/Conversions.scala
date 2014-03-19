@@ -23,7 +23,7 @@ import scala.collection.JavaConverters._
 import scala.collection.JavaConversions._
 import com.linkedin.restsearch.template.utils.Conversions._
 import com.linkedin.restsearch.server.{SnapshotSchemaResolver, ServiceModelsSchemaResolver}
-import com.linkedin.restliexplorer.D2Uri
+import com.linkedin.d2.D2Uri
 import com.linkedin.data.schema.DataSchemaResolver
 import org.json.JSONObject
 import com.linkedin.restli.docgen.examplegen.ExampleRequestResponseGenerator
