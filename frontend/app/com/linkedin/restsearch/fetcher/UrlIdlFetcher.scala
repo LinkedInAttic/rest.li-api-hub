@@ -28,8 +28,6 @@ import java.util.concurrent.TimeUnit
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 
-//import com.linkedin.playplugins.restliplugin.s.client.RestliPlugin
-
 /**
  * Crawls docgen endpoints on running rest.li servers, collecting the idl and data schemas for the resources they host.
  * @author jbetz

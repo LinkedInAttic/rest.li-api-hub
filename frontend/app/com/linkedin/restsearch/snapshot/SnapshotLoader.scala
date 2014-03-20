@@ -14,7 +14,7 @@
    limitations under the License.
 */
 
-package com.linkedin.restsearch.server
+package com.linkedin.restsearch.snapshot
 
 import com.linkedin.restsearch._
 import com.linkedin.restsearch.dataloader._
@@ -144,7 +144,7 @@ class SnapshotLoader() extends Runnable {
         }
       }
       //if(errantService.getClusters.forall(_.getServers.isEmpty)) {
-      //   serviceErrors.put(key, "No server Urls announced to D2 zookeeper in " + fabric + " for resource.")
+      //   serviceErrors.put(key, "No snapshot Urls announced to D2 zookeeper in " + fabric + " for resource.")
       //}
     }
   }

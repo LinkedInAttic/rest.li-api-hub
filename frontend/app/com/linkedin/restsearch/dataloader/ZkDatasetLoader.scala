@@ -34,7 +34,7 @@ object ZkDatasetLoader {
 }
 
 
-case class Uri(val uri: String, val clusterName: String)
+case class Uri(uri: String, clusterName: String)
 
 /**
  * Loads cluster, service and uri data from zookeeper.
@@ -163,11 +163,11 @@ class ZkDatasetLoader(zkHost: String, zkPort: Int) extends DatasetLoader {
     results.toMap
   }
 
-  // "/d2/services/janusCapContentService"
+  // "/d2/services/example"
   //
-  // {"path":"/contentServiceRest",
-  // "serviceName":"janusCapContentService",
-  // "clusterName":"CapServices",
+  // {"path":"/example",
+  // "serviceName":"example",
+  // "clusterName":"exampleCluster",
   // "loadBalancerStrategyName":"degrader",
   // "loadBalancerStrategyList":["degraderV2","degrader"],
   // "loadBalancerStrategyProperties":
@@ -214,13 +214,13 @@ class ZkDatasetLoader(zkHost: String, zkPort: Int) extends DatasetLoader {
     }
   }
 
-  // "/d2/uris/CapServices/ephemoral--101da05e-a440-408e-972c-a8c602629e0c-0000003456"
+  // "/d2/uris/CapServices/ephemoral--XYZ"
   //
   // {"weights":
-  //   {"http://esv4-app100.stg.linkedin.com:10059/cap2-ds/resources":1.0},
+  //   {"http://.../resources":1.0},
   //   "clusterName":"CapServices",
   //   "partitionDesc":
-  //     {"http://esv4-app100.stg.linkedin.com:10059/cap2-ds/resources":{"0":{"weight":1.0}}}
+  //     {"http://esv.../resources":{"0":{"weight":1.0}}}
   // }
   //
   private def deserializeUris(urisJson: Map[String, String]): Map[String, Uri] = {
@@ -236,12 +236,12 @@ class ZkDatasetLoader(zkHost: String, zkPort: Int) extends DatasetLoader {
     keyUriPairs.toMap
   }
 
-  // "/d2/clusters/CapServices"
+  // "/d2/clusters/exampleCluster"
   //
   // {"properties":
   //    {"requestTimeout":"10000","getTimeout":"10000"},
   //  "banned":[],
-  //  "clusterName":"CapServices",
+  //  "clusterName":"exampleCluster",
   //  "prioritizedSchemes":["http"],
   //  "partitionProperties":{"partitionType":"NONE"}
   // }

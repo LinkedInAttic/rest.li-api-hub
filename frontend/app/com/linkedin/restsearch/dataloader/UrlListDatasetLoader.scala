@@ -28,7 +28,10 @@ class UrlListDatasetLoader extends DatasetLoader {
     val dataset = new Dataset()
     val clusters = new ClusterMap()
     val services = new ServiceArray()
-    val cluster = new Cluster()
+
+    val cluster = new Cluster() // since there is no d2 cluster when using a url list, create a placeholder Cluster
+    cluster.setName("Resources")
+
     urlListOpt foreach { urlList =>
       urlList foreach { url =>
         val service = new Service()
@@ -41,8 +44,8 @@ class UrlListDatasetLoader extends DatasetLoader {
       }
     }
     cluster.setServices(services)
-    cluster.setName("AllResources")
-    clusters.put("AllResources", cluster)
+
+    clusters.put("Resources", cluster)
     dataset.setClusters(clusters)
 
     dataset

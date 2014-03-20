@@ -1,43 +1,10 @@
 @(errors: Map[String, String], metadata: com.linkedin.data.DataMap)
 
 
-  @main("go/restli: Errors", includeNavSearch = true) {
+  @main("restli: Errors", includeNavSearch = true) {
   <div class="row">
     <div class="col-lg-9">
       @freshness(metadata)
-
-      <div>
-        <h3>
-          Why are my resources missing?
-        </h3>
-        <p>
-          If your resources do not show up in go/restli, please read through the following possible causes.
-        </p>
-        <ol>
-          <li>
-            <b>D2 configuration for the service has not been checked</b> in OR <b>D2 configuration for the service is checked in,
-            but has not been pushed into the @metadata.get("fabric") D2 zookeeper cluster.</b>  If no resources for your service are listed below,
-            this is likely the cause.  To fix, see
-            <a href="https://iwww.corp.linkedin.com/wiki/cf/display/ENGS/Adding+a+D2+Service">Adding a D2 Service</a>.
-          </li>
-          <li>
-            <b>No running instances of the service have announced themselves to the @metadata.get("fabric") D2 zookeeper cluster.</b> If resources
-            for your service have a message like "No server Urls announced to D2 zookeeper in @metadata.get("fabric")" in the below list,
-            this is likely the cause.  To fix, deploy your service to @metadata.get("fabric") and verify it is running properly.  It may take
-            go/restli up to 15 minutes to detect a gather data from a service once it is running in @metadata.get("fabric").
-          </li>
-          <li>
-            <b>Running instances have announced themselves, but the D2 configuration for the resource is incorrect.</b>  The
-            most common issue is that "path" in the D2 configuration is incorrect which makes it impossible for D2 to route any
-            requests to the service, including the OPTIONS requests go/restli makes to gather data.  If this happens, the below
-            list usually shows a "Error in OPTIONS request" where the server responded with a 500 status code.  If this is the
-            case, carefully review your D2 configuration and make sure the path matches the resource name on your service.
-          </li>
-          <li>
-            If none of the above expose the issue, please mail <a href="mailto:si-dev@@linkedin.com">si-dev</a>.
-          </li>
-        </ol>
-      </div>
 
       <div>
         <table class="table table-condensed table-hover">

@@ -17,6 +17,6 @@
 package com.linkedin.restsearch.permlink
 
 /**
- * @author jbetz@linkedin.com
+ * @author Joe Betz
  */
 class SnapshotUploadException(message: String) extends Exception(message)

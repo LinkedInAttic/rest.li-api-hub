@@ -14,7 +14,7 @@
    limitations under the License.
 */
 
-package com.linkedin.restsearch.server
+package com.linkedin.restsearch.snapshot
 
 import play.api.Logger
 import com.linkedin.data.DataMap

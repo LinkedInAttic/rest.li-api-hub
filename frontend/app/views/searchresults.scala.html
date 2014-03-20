@@ -4,7 +4,7 @@
 @import com.linkedin.restsearch.Protocol
   @import com.linkedin.restsearch.template.utils.Conversions._
 
-  @main("go/restli: " + keyword, includeNavSearch = false) {
+  @main("restli: " + keyword, includeNavSearch = false) {
 <div class="row">
   <div class="col-lg-9">
     @freshness(metadata)
@@ -16,7 +16,7 @@
     @if(keyword.length > 0) {
       <p class="muted">@paging.getTotal() results for <i>'@keyword'</i></p>
     }
-  
+
     <ul class="media-list">
     @results.map { result =>
       @defining(result.getClusters().get(0)) { cluster =>
@@ -31,7 +31,7 @@
               }
             }
           </h4>
-          
+
           <small class="resultsubtext">
             @if(result.getProtocol() == Protocol.REST && result.hasResourceSchema()) {
               @defining(result.getResourceSchema()) { schema =>
@@ -51,7 +51,7 @@
             -
             d2://@result.getKey()
           </small>
-          
+
         @if(result.getProtocol() == Protocol.REST && result.hasResourceSchema()) {
           @defining(result.getResourceSchema()) { schema =>
             <ul class="list-unstyled">

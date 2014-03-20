@@ -1,15 +1,10 @@
 Things that must be fixed before opensourcing:
 
-[ ] Add extension point so that the mixin loader can be used internally and a UI module for it can be plugged in (or just drop mixin support, it's a bit hairy)
+[ ] fix security token that was removed from console and permlink forms
 [ ] Find way to cleanly inject internal-to-superblock logic
-[ ] try directly using multi-product sbt to avoid having to define the oss projects multiple times
-[ ] Remove duplicated static content if possible (change where static content is loaded from?)
 
 Small tasks to do before releasing:
 
-[ ] commit pegasus changes (RB 276699), publish new pegasus version, depend on it
-[ ] commit restli-resource-explorer changes (RB 276707), publish new version, depend on it, clean up rewrap TODOs in ExplorerDatasetLoader
-[ ] remove local-repo from local repositories for opensource project
 [ ] run links checker to test correctness
 [ ] test api console
 [ ] Remove all linkedin urls from frontend/conf/application.conf
@@ -17,12 +12,14 @@ Small tasks to do before releasing:
 [ ] Validate all config by building locally
 [ ] Check in all config/ changes BEFORE committing rest-search_trunk code
 
-Things to do to stablize opensourcing:
+Things that need to be improved, but can be done after initial opensourcing:
+
+[ ] Add extension point so that the mixin loader can be used internally and a UI module for it can be plugged in (or just drop mixin support, it's a bit hairy)
+[ ] Remove duplicated static content if possible (change where static content is loaded from?)
+[ ] try directly using multi-product sbt to avoid having to define the oss projects multiple times
 [ ] release pegasus to maven central
 [ ] release rest.li-sbt-plugin to maven central, try to just publish it into same maven grouping as rest of pegasus
 [ ] include a binary and documentation about go/restli on the website and wiki
-
-Things that need to be improved:
 
 [ ] Clean up root page
 [ ] Stop using JavaConversions every, switch to JavaConverters

@@ -27,9 +27,9 @@ import play.api.libs.concurrent.Execution.Implicits._
 import com.linkedin.d2.{D2Service, D2Cluster}
 
 /**
- * Uses a pastebin to store Cluster information.
+ * Uses a pastebin to store Idl information.
  */
-class ClusterPermlinkClient(pastebinClient: PastebinClient) {
+class PastebinIdlStore(pastebinClient: PastebinClient) {
 
   def read(permlink: String): Future[Cluster] = {
     pastebinClient.load(permlink) map { jsonStr =>

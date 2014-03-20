@@ -22,7 +22,7 @@ import scala.Some
 import scala.collection.JavaConverters._
 import scala.collection.JavaConversions._
 import com.linkedin.restsearch.template.utils.Conversions._
-import com.linkedin.restsearch.server.{SnapshotSchemaResolver, ServiceModelsSchemaResolver}
+import com.linkedin.restsearch.snapshot.{SnapshotSchemaResolver, ServiceModelsSchemaResolver}
 import com.linkedin.d2.D2Uri
 import com.linkedin.data.schema.DataSchemaResolver
 import org.json.JSONObject
@@ -34,7 +34,7 @@ import play.api.Play
 import play.api.Play.current
 
 /**
- * Use implicit conversions to mix in additional utility methods to the data template classes used by go/restli.
+ * Use implicit conversions to mix in additional utility methods to the data template classes.
  */
 object Conversions {
   lazy val knownColoVariantSuffixes = Play.application.configuration.getStringList("coloVariantSuffixes").map(_.asScala).getOrElse(Nil)

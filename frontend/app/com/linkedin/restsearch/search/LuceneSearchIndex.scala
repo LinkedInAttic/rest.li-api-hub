@@ -53,7 +53,7 @@ class LuceneSearchIndex extends SearchIndex {
   import LuceneSearchIndex._
 
   var reader : DirectoryReader = null
-  val maxQueryResults = 10000;
+  val maxQueryResults = 100000
 
   override def search(queryString: String): List[String] = {
     val trimmedQueryString = queryString.trim().replaceAll("_", "")

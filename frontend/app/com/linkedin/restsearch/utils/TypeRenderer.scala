@@ -14,21 +14,21 @@
    limitations under the License.
 */
 
-package com.linkedin.restsearch.html
+package com.linkedin.restsearch.utils
 
 import com.linkedin.restsearch.Cluster
 import com.linkedin.restsearch.Service
-import com.linkedin.restli.restspec._
-import com.linkedin.data.schema._
-import com.linkedin.data.template.DataTemplateUtil
 import controllers.routes
 import scala.collection.JavaConversions._
-import com.linkedin.data.schema.generator.SchemaSampleDataGenerator
-import com.linkedin.data.{DataList, DataMap}
-import com.linkedin.restli.internal.server.util.DataMapUtils
 import org.json.JSONObject
 import org.json.JSONArray
 import com.linkedin.restsearch.template.utils.Conversions._
+import com.linkedin.data.schema._
+import com.linkedin.data.{DataMap, DataList}
+import com.linkedin.data.template.DataTemplateUtil
+import com.linkedin.data.schema.generator.SchemaSampleDataGenerator
+import com.linkedin.restli.internal.server.util.DataMapUtils
+import com.linkedin.restli.restspec._
 
 object TypeRenderer {
   val defaultSpec = new SchemaSampleDataGenerator.DataGenerationOptions()

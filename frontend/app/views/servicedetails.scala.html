@@ -1,4 +1,4 @@
-@(cluster: com.linkedin.restsearch.Cluster, service: com.linkedin.restsearch.Service, entitySchema: Option[com.linkedin.data.schema.DataSchema], typeRenderer: com.linkedin.restsearch.html.TypeRenderer, exampleGenerator : Option[com.linkedin.restli.docgen.examplegen.ExampleRequestResponseGenerator])
+@(cluster: com.linkedin.restsearch.Cluster, service: com.linkedin.restsearch.Service, entitySchema: Option[com.linkedin.data.schema.DataSchema], typeRenderer: com.linkedin.restsearch.utils.TypeRenderer, exampleGenerator : Option[com.linkedin.restli.docgen.examplegen.ExampleRequestResponseGenerator])
 @import com.linkedin.restli.server.ResourceLevel
 
 @import com.linkedin.data.template.GetMode
@@ -12,7 +12,7 @@
 @import scala.collection.JavaConversions._
 @import com.linkedin.data.template.StringArray
 @import com.linkedin.restli.restspec._
-@import com.linkedin.restsearch.html._
+@import com.linkedin.restsearch.utils._
 @import com.linkedin.restli.client.Request
 @import com.linkedin.data.schema._
 @import com.linkedin.restsearch.template.utils.Conversions._
@@ -467,7 +467,7 @@
   </ul>
 }
 
-@main("go/restli: " + service.keysToResource.mkString("/")) {
+@main("restli: " + service.keysToResource.mkString("/")) {
   <ul class="breadcrumb">
     <li><a href="@routes.Application.cluster(cluster.getName())">@cluster.getName() Cluster</a> <span class="divider"></span></li>
     @defining(service.keysToResource) { parts =>

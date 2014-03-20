@@ -1,7 +1,7 @@
-@(clusters: List[com.linkedin.restsearch.Cluster], metadata: com.linkedin.data.DataMap, dashboardStats: com.linkedin.restsearch.server.DashboardStats)
+@(clusters: List[com.linkedin.restsearch.Cluster], metadata: com.linkedin.data.DataMap, dashboardStats: com.linkedin.restsearch.snapshot.DashboardStats)
 
 @import com.linkedin.restsearch.Service
-@import com.linkedin.restsearch.server.DashboardStat
+@import com.linkedin.restsearch.snapshot.DashboardStat
 @import com.linkedin.restsearch.template.utils.Conversions._
 @import org.joda.time.DateTime
 
@@ -57,7 +57,7 @@
   </div>
 }
 
-@main("go/restli") {
+@main("restli") {
   <div class="row">
     <div class="col-lg-9">
       @freshness(metadata)

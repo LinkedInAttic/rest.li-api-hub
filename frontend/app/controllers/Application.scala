@@ -23,7 +23,7 @@ import com.linkedin.restli.server.{ResourceLevel, PagingContext}
 import com.linkedin.restsearch._
 import play.api.mvc._
 import com.linkedin.data.schema._
-import com.linkedin.restsearch.html._
+import com.linkedin.restsearch.utils._
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.libs.ws.WS
@@ -31,7 +31,7 @@ import play.api.libs.concurrent.Execution.Implicits._
 import org.json.JSONObject
 import play.api.Play
 import play.api.Play.current
-import com.linkedin.restsearch.server.ServiceModelsSchemaResolver
+import com.linkedin.restsearch.snapshot.ServiceModelsSchemaResolver
 import com.linkedin.restsearch.plugins.SnapshotInitPlugin
 import org.apache.commons.lang.StringEscapeUtils
 import play.api.mvc.Action
@@ -47,6 +47,7 @@ import scala.concurrent.Future
 import com.linkedin.restli.docgen.examplegen.ExampleRequestResponse
 import scala.Some
 import play.api.mvc.SimpleResult
+import com.linkedin.restsearch.utils.TypeRenderer
 
 object Application extends Controller with ConsoleUtils {
   val resultsPerPage = 20
@@ -61,7 +62,7 @@ object Application extends Controller with ConsoleUtils {
   private val consoleEnabled = config.getBoolean("consoleEnabled").getOrElse("false")
   private lazy val pastebinClientClass = config.getString("pastebinClientClass").getOrElse("com.linkedin.restsearch.permlink.GistClient")
   private lazy val pastebinClient = Class.forName(pastebinClientClass).newInstance().asInstanceOf[PastebinClient]
-  private lazy val clusterPermlinkClient = new ClusterPermlinkClient(pastebinClient)
+  private lazy val clusterPermlinkClient = new PastebinIdlStore(pastebinClient)
 
   def index = Action { request =>
     Ok(views.html.clusterlist(snapshot.allClusters, snapshot.metadata))

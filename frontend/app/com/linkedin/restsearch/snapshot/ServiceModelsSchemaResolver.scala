@@ -14,7 +14,7 @@
    limitations under the License.
 */
 
-package com.linkedin.restsearch.server
+package com.linkedin.restsearch.snapshot
 
 import com.linkedin.restsearch.Service
 import com.linkedin.data.schema.resolver.DefaultDataSchemaResolver

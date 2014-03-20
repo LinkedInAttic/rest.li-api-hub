@@ -50,12 +50,12 @@ class CrawlingDatasetLoaderProxy(underlying: DatasetLoader, crawler: IdlFetcher)
 
     services.values filter { s => s.hasKey && s.hasPath } foreach { service =>
       crawler.fetch(service) match {
-        case (scrape: SuccessfulScrape) => {
+        case scrape: SuccessfulScrape => {
           service.setResourceSchema(scrape.resourceSchema)
           val dataSchemas = scrape.dataSchemas.mapValues(_.toString)
           service.setModels(new StringMap(mapAsJavaMap(dataSchemas)))
         }
-        case (failure: FailedScrape) => {
+        case failure: FailedScrape => {
           if(failure.ex.getMessage == null) {
             Logger.error("Failed to crawl service " + service.getKey() + " exception: ", failure.ex)
             errors.put(service.getKey, failure.ex.getStackTraceString)
