@@ -1,7 +1,20 @@
-Rest.li Api Hub
+Rest.li API Hub
 ===============
 
-Api Hub is a web UI for browsing and searching documentation of rest.li APIs.
+API Hub is a web UI for browsing and searching a catalog of rest.li APIs.
+
+Features:
+
+* Explorable catalog of all Rest.li resources
+* Full text search across all resources and data schemas
+* Detailed resource pages including all available RESTful methods
+* Detailed data schema pages
+* All resources and data schemas documentation is displayed and nicely formatted
+* Generated example HTTP requests and responses
+* Interactive Console for composing and sending requests to live REST resources
+* Requests composed in console and be saved to a pastebin (gist by default) and shared via a link
+
+Screenshots below.
 
 Requirements
 ------------
@@ -49,3 +62,22 @@ How to debug
 
 * `play debug run`
 * Connect IDE debugger to port 9999
+
+Screenshots
+===========
+
+Search
+------
+![](https://raw.githubusercontent.com/wiki/linkedin/rest.li-api-hub/search-screenshot.png)
+
+Resource Details Pages
+----------------------
+![](https://raw.githubusercontent.com/wiki/linkedin/rest.li-api-hub/resource-screenshot.png)
+
+Generated Examples
+------------------
+![](https://raw.githubusercontent.com/wiki/linkedin/rest.li-api-hub/http-example-screenshot.png)
+
+Send Requests from the Console
+------------------------------
+![](https://raw.githubusercontent.com/wiki/linkedin/rest.li-api-hub/console-screenshot.png)
