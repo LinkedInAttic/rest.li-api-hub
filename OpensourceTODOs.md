@@ -1,6 +1,7 @@
 Things that must be fixed before opensourcing:
 
 [ ] fix security token that was removed from console and permlink forms
+[ ] fix bug where incorrect symbols appearing where glyphs are used
 [ ] Find way to cleanly inject internal-to-superblock logic
 
 Small tasks to do before releasing:
