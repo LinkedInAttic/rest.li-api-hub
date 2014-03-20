@@ -24,13 +24,15 @@ import scala.collection.JavaConversions._
 class UrlListDatasetLoader extends DatasetLoader {
   private val urlListOpt = Play.application.configuration.getStringList("resourceUrls")
 
+  private val defaultClusterName = "Resources"
+
   def loadDataset(isStartup: Boolean): Dataset = {
     val dataset = new Dataset()
     val clusters = new ClusterMap()
     val services = new ServiceArray()
 
     val cluster = new Cluster() // since there is no d2 cluster when using a url list, create a placeholder Cluster
-    cluster.setName("Resources")
+    cluster.setName(defaultClusterName)
 
     urlListOpt foreach { urlList =>
       urlList foreach { url =>
@@ -40,6 +42,11 @@ class UrlListDatasetLoader extends DatasetLoader {
         service.setKey(path)
         service.setPath(path)
         service.setProtocol(Protocol.REST)
+        val serviceCluster = new Cluster()
+        serviceCluster.setName(defaultClusterName)
+        val serviceClusters = new ClusterArray()
+        serviceClusters.add(serviceCluster)
+        service.setClusters(serviceClusters)
         services.add(service)
       }
     }

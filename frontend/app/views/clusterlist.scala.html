@@ -18,7 +18,10 @@
 
     <h2>All Available Resources</h2>
 
-    <div>
+    @if(clusters.size == 1) {
+      @clusterservices(clusters(0))
+    } else {
+      <div>
       @defining(clusters.filter(_.getName().size > 0).groupBy(_.getName().charAt(0).toUpper)) { groupedClusters =>
         <ul class="pagination pagination-sm">
           @defining('A' to 'Z') { letters =>
@@ -72,6 +75,8 @@
         </ul>
       }
     </div>
+    }
+
   </div>
 </div>
 

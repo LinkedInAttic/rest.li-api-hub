@@ -218,7 +218,7 @@ class LuceneSearchIndex extends SearchIndex {
         doc.add(new Field("isCollection", "true", TextField.TYPE_NOT_STORED))
         val collection = schema.getCollection()
 
-        if (service.hasClusters) {
+        if (service.hasClusters && service.getClusters.size > 0) {
           if (hasComplexKey(service.getClusters.get(0), service, collection.getIdentifier())) {
             doc.add(new Field("hasComplexKey", "true", TextField.TYPE_NOT_STORED))
           }
