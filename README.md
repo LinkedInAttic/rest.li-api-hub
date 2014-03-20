@@ -35,8 +35,8 @@ Building
 Configuration
 -------------
 
-* Modify the 'resourceUrls' property in 'frontend/conf/application.conf' to include URLs to all your resources.
-* OR, if you are running D2.  Set the 'zkHost' and 'zkPort' to point to your D2 zookeeper.
+* Edit the data loader strategy configuration properties in  'frontend/conf/application.conf' 
+  to include URLs to all your resources.
 
 How to run
 ----------
