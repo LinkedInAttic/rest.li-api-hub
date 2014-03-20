@@ -1,4 +1,5 @@
-@(httpMethod: String, d2path: String, headers: String, requestBody: Option[String], responseBody: Option[String], metadata: com.linkedin.data.DataMap)(implicit request: play.api.mvc.RequestHeader)
+@(httpMethod: String, d2path: String, headers: String, requestBody: Option[String], responseBody: Option[String], metadata: com.linkedin.data.DataMap, csrfProvider: com.linkedin.restsearch.security.CsrfProvider)(implicit request: play.api.mvc.RequestHeader)
+@import play.filters.csrf.CSRF
 
 @main("restli: HTTP Console") {
   <h2>HTTP Console</h2>
@@ -16,6 +17,9 @@
   </div>
 
   <form id="console-form" class="form-horizontal" action="@request.uri" method="post">
+    @csrfProvider.getToken(request).map { token =>
+      <input type="hidden" name="csrfToken" value="@token"/>
+    }
     <div class="form-group">
       <label class="col-lg-2 control-label" for="httpMethod">Method</label>
       <div class="col-lg-10">

@@ -22,6 +22,7 @@ object ApplicationBuild extends Build with restli.All {
   val appDependencies = Seq(
     "com.fasterxml.jackson.module" % "jackson-module-scala_2.10" % "2.2.2",
     "com.typesafe.play" % "play-cache_2.10" % "2.2.1",
+    "com.typesafe.play" % "filters-helpers_2.10" % "2.2.1",
     "joda-time" % "joda-time" % "2.2",
     "org.apache.zookeeper" % "zookeeper" % "3.4.2" excludeAll(
       ExclusionRule(organization = "com.sun.jdmk"),

@@ -1,4 +1,4 @@
-@()(implicit request: play.api.mvc.RequestHeader)
+@(csrfProvider: com.linkedin.restsearch.security.CsrfProvider)(implicit request: play.api.mvc.RequestHeader)
 
 @main("restli: upload") {
 
@@ -18,7 +18,9 @@
             enctype="multipart/form-data"
             action="@routes.Application.upload"
             method="post">
-
+            @csrfProvider.getToken(request).map { token =>
+              <input type="hidden" name="csrfToken" value="@token"/>
+            }
             <div class="form-group">
               <input type="file" name="snapshot" class="form-control">
             </div>

@@ -32,7 +32,7 @@ import org.json.JSONObject
 import play.api.Play
 import play.api.Play.current
 import com.linkedin.restsearch.snapshot.ServiceModelsSchemaResolver
-import com.linkedin.restsearch.plugins.SnapshotInitPlugin
+import com.linkedin.restsearch.plugins.{SnapshotInitPlugin}
 import org.apache.commons.lang.StringEscapeUtils
 import play.api.mvc.Action
 import play.api.libs.json.Json
@@ -48,6 +48,7 @@ import com.linkedin.restli.docgen.examplegen.ExampleRequestResponse
 import scala.Some
 import play.api.mvc.SimpleResult
 import com.linkedin.restsearch.utils.TypeRenderer
+import com.linkedin.restsearch.security.CsrfProvider
 
 object Application extends Controller with ConsoleUtils {
   val resultsPerPage = 20
@@ -64,6 +65,11 @@ object Application extends Controller with ConsoleUtils {
   private lazy val pastebinClient = Class.forName(pastebinClientClass).newInstance().asInstanceOf[PastebinClient]
   private lazy val clusterPermlinkClient = new PastebinIdlStore(pastebinClient)
 
+  private lazy val csrfProviderClass = config.getString("csrfProviderClass").getOrElse("com.linkedin.restsearch.security.PlayCsrfProvider")
+  private lazy val csrfProvider = Class.forName(csrfProviderClass).newInstance().asInstanceOf[CsrfProvider]
+
+  private lazy val d2Url = config.getString("d2url")
+
   def index = Action { request =>
     Ok(views.html.clusterlist(snapshot.allClusters, snapshot.metadata))
   }
@@ -73,7 +79,7 @@ object Application extends Controller with ConsoleUtils {
   }
 
   def uploadPrompt = Action { implicit request =>
-    Ok(views.html.upload())
+    Ok(views.html.upload(csrfProvider))
   }
 
   def upload = Action.async(parse.multipartFormData) { request =>
@@ -214,7 +220,8 @@ object Application extends Controller with ConsoleUtils {
               request.headers.map{ case(k, v) => k + ":" + v }.mkString("\n"),
               request.input,
               None,//Some(method.exampleResponse(typeRenderer).buildHttpResponse())
-              snapshot.metadata
+              snapshot.metadata,
+              csrfProvider
             )))
           } else {
             Future(NotFound("Operation not found: " + op))
@@ -235,7 +242,7 @@ object Application extends Controller with ConsoleUtils {
           val headers = (pasteCodeJson \ "headers").as[String]
           val requestBody = Some((pasteCodeJson \ "body").as[String])
           val responseBody = None
-          Ok(views.html.console(httpMethod, d2Path, headers, requestBody, responseBody, snapshot.metadata))
+          Ok(views.html.console(httpMethod, d2Path, headers, requestBody, responseBody, snapshot.metadata, csrfProvider))
         }
       } catch {
         case e: PastebinException => {
@@ -282,7 +289,7 @@ object Application extends Controller with ConsoleUtils {
             val consoleRequest = userForm.bindFromRequest.get
             val headers = parseHeadersFromConsole(consoleRequest.headers)
             val path = if(consoleRequest.d2Path.trim().startsWith("/")) consoleRequest.d2Path.trim() else "/" + consoleRequest.d2Path.trim()
-            val d2request = WS.url(serviceOpt.get.getUrl /*ExternalSites.createD2Url(path)*/).withHeaders(headers: _*)
+            val d2request = WS.url(d2Url.map(_ + serviceOpt.get.getPath).getOrElse(serviceOpt.get.getUrl)).withHeaders(headers: _*)
             if(d2request == null) throw new IllegalArgumentException("Malformed request path: " + path)
             val promise = consoleRequest.httpMethod match {
               case "POST" => d2request.post(consoleRequest.body)
@@ -299,7 +306,7 @@ object Application extends Controller with ConsoleUtils {
               } else {
                 Some("HTTP/1.1 " + d2response.status + " " + d2response.statusText + "\n" + headers + "\n\n" + d2response.body)
               }
-              Ok(views.html.console(consoleRequest.httpMethod, consoleRequest.d2Path, consoleRequest.headers, Some(consoleRequest.body), responseBody, snapshot.metadata))
+              Ok(views.html.console(consoleRequest.httpMethod, consoleRequest.d2Path, consoleRequest.headers, Some(consoleRequest.body), responseBody, snapshot.metadata, csrfProvider))
             }
           }
         }
