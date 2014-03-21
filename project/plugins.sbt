@@ -4,7 +4,7 @@ resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/
 
 resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 
-libraryDependencies += "com.linkedin.pegasus" %% "sbt-plugin" % "0.0.1"
+libraryDependencies += "com.linkedin.pegasus" %% "sbt-plugin" % "0.0.2"
 
 addSbtPlugin("com.github.mpeltonen" % "sbt-idea" % "1.6.0")
 
