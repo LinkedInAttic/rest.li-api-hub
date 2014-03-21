@@ -13,7 +13,7 @@ object ApplicationBuild extends Build with restli.All {
 
   val baseSettings =  super.settings ++ org.sbtidea.SbtIdeaPlugin.settings ++ Seq(
     organization := "com.linkedin.pegasus.gorestli",
-    version := "0.0.1",
+    version := "0.0.2",
     name := "restli-apihub",
     resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
     resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
