@@ -32,6 +32,7 @@ object ApplicationBuild extends Build with restli.All {
     "org.apache.lucene" % "lucene-core" % "4.2.0",
     "org.apache.lucene" % "lucene-analyzers-common" % "4.2.0",
     "org.apache.lucene" % "lucene-queryparser" % "4.2.0",
+    "com.linkedin.pegasus" % "data" % "1.15.3",
     "com.linkedin.pegasus" % "restli-common" % "1.15.3",
     "com.linkedin.pegasus" % "restli-client" % "1.15.3",
     "com.linkedin.pegasus" % "restli-server" % "1.15.3",
