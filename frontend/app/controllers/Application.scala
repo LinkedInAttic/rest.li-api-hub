@@ -22,6 +22,7 @@ import com.linkedin.restli.common.{ResourceMethod, CollectionMetadata}
 import com.linkedin.restli.server.{ResourceLevel, PagingContext}
 import com.linkedin.restsearch._
 import play.api.mvc._
+import play.api.Logger
 import com.linkedin.data.schema._
 import com.linkedin.restsearch.utils._
 import play.api.data.Form
@@ -277,6 +278,10 @@ object Application extends Controller with ConsoleUtils {
     )(ConsoleRequest.apply)(ConsoleRequest.unapply)
   )
 
+  private def toFullUri(path: String, service: Service) = {
+    service.getUrl.trim().stripSuffix("/") + path.trim().replaceFirst("/" + service.getKey, "")
+  }
+
   def send(clusterName: String, serviceKey: String, op: String) = Action.async { implicit request =>
     loadCluster(clusterName)  flatMap { cluster =>
       if (!cluster.isDefined) Future(NotFound)
@@ -289,7 +294,9 @@ object Application extends Controller with ConsoleUtils {
             val consoleRequest = userForm.bindFromRequest.get
             val headers = parseHeadersFromConsole(consoleRequest.headers)
             val path = if(consoleRequest.d2Path.trim().startsWith("/")) consoleRequest.d2Path.trim() else "/" + consoleRequest.d2Path.trim()
-            val d2request = WS.url(d2Url.map(_ + serviceOpt.get.getPath).getOrElse(serviceOpt.get.getUrl)).withHeaders(headers: _*)
+            val url = d2Url.map(_ + path).getOrElse(toFullUri(path, serviceOpt.get))
+            Logger.error(url + " path: " + path + " key: " + serviceOpt.get.getKey)
+            val d2request = WS.url(url).withHeaders(headers: _*)
             if(d2request == null) throw new IllegalArgumentException("Malformed request path: " + path)
             val promise = consoleRequest.httpMethod match {
               case "POST" => d2request.post(consoleRequest.body)
