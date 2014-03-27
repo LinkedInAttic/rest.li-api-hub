@@ -76,7 +76,6 @@ class PastebinIdlStore(pastebinClient: PastebinClient) {
     service.setResourceSchema(resourceSchema)
     service.setKey(resourceSchema.getName)
     service.setPath(resourceSchema.getPath)
-    service.setProtocol(Protocol.REST)
     service.setD2Service(new D2Service().setName(resourceSchema.getName).setPath(resourceSchema.getPath))
 
     val modelsJson = json.getJSONArray("models")

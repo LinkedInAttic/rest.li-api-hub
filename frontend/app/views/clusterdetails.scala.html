@@ -1,7 +1,6 @@
 @(cluster: com.linkedin.restsearch.Cluster)
 @import com.linkedin.data.template.GetMode
 
-@import com.linkedin.restsearch.Protocol
 @import scala.collection.immutable.List
 @import com.linkedin.restsearch.template.utils.Conversions._
 
@@ -59,37 +58,34 @@
       </div>
     }
 
-    <ul id="protocol-tabs" class="nav nav-tabs">
+    <ul id="tabs" class="nav nav-tabs">
       <li><a id="rest-tab" href="#Resources" data-toggle="tab">Resources</a></li>
       <li><a href="#nodes-tab" data-toggle="tab">Nodes</a></li>
     </ul>
 
-    <div id="protocol-tab-content" class="tab-content">
-      @defining(List(Protocol.REST, Protocol.CONTENT_SERVICE)) { protocols =>
-        @protocols.map { protocol =>
-          <div class="tab-pane" id="Resources">
-            @clusterservices(cluster, collapseColoVariants=cluster.isPrimaryColoVariant)
-          </div>
-        }
-        <div class="tab-pane" id="nodes-tab">
-          <table class="table table-condensed table-hover">
-            <thead>
+    <div id="tab-content" class="tab-content">
+      <div class="tab-pane" id="Resources">
+        @clusterservices(cluster, collapseColoVariants=cluster.isPrimaryColoVariant)
+      </div>
+
+      <div class="tab-pane" id="nodes-tab">
+        <table class="table table-condensed table-hover">
+          <thead>
+            <tr>
+              <th>Partition Description (map of partition ID to weight)</th>
+              <th>URI</th>
+            </tr>
+          </thead>
+          <tbody>
+            @cluster.uris.map { server =>
               <tr>
-                <th>Partition Description (map of partition ID to weight)</th>
-                <th>URI</th>
+                <td>@server.getPartitionDescription(GetMode.DEFAULT)</td>
+                <td>@server.getURI(GetMode.DEFAULT)</td>
               </tr>
-            </thead>
-            <tbody>
-              @cluster.uris.map { server =>
-                <tr>
-                  <td>@server.getPartitionDescription(GetMode.DEFAULT)</td>
-                  <td>@server.getURI(GetMode.DEFAULT)</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      }
+            }
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>

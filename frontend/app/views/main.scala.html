@@ -25,7 +25,6 @@
         <a class="navbar-brand" href="@routes.Application.index/">Rest.li</a>
         @if(includeNavSearch) {
           <form action="@routes.Application.searchResources" method="get" class="navbar-form pull-left">
-            <input type="hidden" name="protocol" value="REST"/>
             <input type="text" class="form-control" style="width: 200px;" placeholder="Search" name="keyword">
           </form>
         }

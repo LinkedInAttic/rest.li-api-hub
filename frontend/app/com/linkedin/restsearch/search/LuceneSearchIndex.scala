@@ -172,8 +172,6 @@ class LuceneSearchIndex extends SearchIndex {
 
     doc.add(new Field("isSubresource", isSubresource.toString, TextField.TYPE_NOT_STORED))
 
-    doc.add(new Field("protocol", service.getProtocol().toString(), TextField.TYPE_STORED))
-
     if(service.hasCreatedAt) {
       doc.add(new Field("createdDate", DateTools.dateToString(new Date(service.getCreatedAt), Resolution.DAY), TextField.TYPE_NOT_STORED))
     }

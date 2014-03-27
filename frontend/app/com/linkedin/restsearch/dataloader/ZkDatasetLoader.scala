@@ -182,11 +182,6 @@ class ZkDatasetLoader(zkHost: String, zkPort: Int) extends DatasetLoader {
       serviceResult.setKey(serviceName)
       val path = service.getString("path")
       serviceResult.setPath(path)
-      if (path.equals("/contentServiceRest")) {
-        serviceResult.setProtocol(Protocol.CONTENT_SERVICE)
-      } else {
-        serviceResult.setProtocol(Protocol.REST)
-      }
 
       if(stat != null) {
         serviceResult.setCreatedAt(stat.getCtime)

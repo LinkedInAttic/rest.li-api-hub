@@ -23,23 +23,23 @@ class SnapshotInitPlugin(app: play.Application) extends Plugin {
   val snapshotLoader = new SnapshotLoader()
 
   override def onStart() {
-    Logger.info("zookeeper snapshot plugin starting...")
+    Logger.info("Snapshot plugin starting...")
     try
     {
       snapshotLoader.run(true)
     } catch {
-      case e: Throwable => Logger.error("Error initializing zookeeper snapshot", e)
+      case e: Throwable => Logger.error("Error initializing snapshot", e)
     }
-    Logger.info("zookeeper snapshot plugin started")
+    Logger.info("Snapshot plugin started")
   }
 
   override def onStop() {
-    Logger.info("zookeeper snapshot plugin stopped")
+    Logger.info("Snapshot plugin stopped")
   }
 }
 
 object SnapshotInitPlugin {
-  private val pluginUtil = new PluginUtil[SnapshotInitPlugin](classOf[SnapshotInitPlugin], "zkSnapshotInit")
+  private val pluginUtil = new PluginUtil[SnapshotInitPlugin](classOf[SnapshotInitPlugin], "snapshotInit")
   def getInstance: SnapshotInitPlugin = pluginUtil.getInstance
   def isEnabled: Boolean = pluginUtil.isEnabled
 }

@@ -1,7 +1,0 @@
-{
-  "type": "enum",
-  "name" : "Protocol",
-  "namespace" : "com.linkedin.restsearch",
-  "symbols" : [ "REST", "CONTENT_SERVICE" ]
-}
-      

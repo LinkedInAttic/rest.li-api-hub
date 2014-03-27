@@ -1,4 +1,5 @@
 @(cluster: com.linkedin.restsearch.Cluster, service: com.linkedin.restsearch.Service, entitySchema: Option[com.linkedin.data.schema.DataSchema], typeRenderer: com.linkedin.restsearch.utils.TypeRenderer, exampleGenerator : Option[com.linkedin.restli.docgen.examplegen.ExampleRequestResponseGenerator])
+@import play.Play
 @import com.linkedin.restli.server.ResourceLevel
 
 @import com.linkedin.data.template.GetMode
@@ -106,7 +107,7 @@
     </button>
     <ul class="dropdown-menu" role="menu" aria-labelledby="#operationName-examples">
       <li><a href="#@operationName-httpExample" data-toggle="modal">HTTP</a></li>
-      <li><a href="#@operationName-curliExample" data-toggle="modal">curli</a></li>
+      <li><a href="#@operationName-curlExample" data-toggle="modal">curl</a></li>
       <li><a href="@routes.Application.send(cluster.getName(), service.keysToResource.mkString("."), operationName)" >Try it!</a></li>
     </ul>
   </div>
@@ -132,16 +133,16 @@
     </div>
   </div>
 
-  <div id="@operationName-curliExample" class="modal" role="dialog">
+  <div id="@operationName-curlExample" class="modal" role="dialog">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-          <h3>@operationName curli Example</h3>
+          <h3>@operationName curl Example</h3>
         </div>
         <div class="modal-body">
           <h5>Request<h5>
-            @curliRequest(example.getRequest)
+            @curlRequest(example.getRequest)
           <h5>Response<h5>
             @response(example.getResponse)
         </div>
@@ -165,10 +166,10 @@
 @request.input.get}</pre>
 }
 
-@curliRequest(request: RestRequest) = {
-<pre>curli --pretty-print "d2:/@request.exampleUri"
+@curlRequest(request: RestRequest) = {
+<pre>@Play.application().configuration().getString("curlCommand") "d2:/@request.exampleUri"
 -X @request.getMethod
-@request.curliExampleHeaders.map{ case(key, value)=>-H @key: @value}.mkString("\n")
+@request.curlExampleHeaders.map{ case(key, value)=>-H @key: @value}.mkString("\n")
 @if(request.input.isDefined){--data '@request.input.get'}</pre>
 }
 

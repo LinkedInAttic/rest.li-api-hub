@@ -111,16 +111,11 @@ class Snapshot(
   }
 
   /**
-   * TODO:  We should index this information upfront so we don't have to do this recursive search routine
-   * here and so we can avoid constructing new service instances for all the subresources on each request.
+   * TODO: We should index this information upfront so we don't have to do this recursive search routine
+   *       here and so we can avoid constructing new service instances for all the subresources on each request.
    *
-   * Create a list of Services from the root Service down to the correct subresource according to the resource keys in resourcePath.
-   *
-   * E.g.  given the "threadsBackend" service as root and List("comments", "likes") for UscpBackend, this routine will return a list of the form:
-   * List(
-   *   <existing threadsBackend service that is passed in as root>,
-   *   <new service instance for "comments" with parent set to "threadsBackend">,
-   *   <new service instance for "likes" with parent set to "comments">)
+   * Create a list of Services from the root Service down to the correct subresource according to the resource keys in
+   * resourcePath.
    *
    */
   private def findSubresourcesAlongPath(rootService: Service, resourcePathKeys: List[String]): List[Service] = {
@@ -148,12 +143,11 @@ class Snapshot(
   }
 
   private def createServiceForSubresource(key: String, schema: ResourceSchema, parent: Service, rootService: Service) = {
-    val currentService = new Service() // key, path, clusters, protocol, resourceSchema, models
+    val currentService = new Service() // key, path, clusters, resourceSchema, models
     currentService.setKey(key)
     currentService.setPath(schema.getPath())
     currentService.setResourceSchema(schema)
     currentService.setClusters(rootService.getClusters())
-    currentService.setProtocol(rootService.getProtocol())
     currentService.setModels(rootService.getModels())
     currentService.setParent(parent)
     currentService
@@ -177,13 +171,6 @@ class Snapshot(
 
   lazy val dashboardStats = buildDashboardStats()
   private def buildDashboardStats() = {
-    // total REST vs. content services
-
-    val protocolCounts = List(
-      searchTermEntry("rest", "protocol:REST"),
-      searchTermEntry("content service", "protocol:CONTENT_SERVICE")
-    )
-
     val resourceCounts = List(
       searchTermEntry("collections", "isCollection:true AND NOT hasComplexKey:true"),
       searchTermEntry("complex keys", "isCollection:true AND hasComplexKey:true"),
@@ -198,23 +185,24 @@ class Snapshot(
       "delete", "batch_delete", "create", "batch_create")
 
     val methodCounts = methods map { m =>
-      searchTermEntry(m, "method:" + m + " AND protocol:REST")
+      searchTermEntry(m, "method:" + m)
     }
 
     val primaryServices = services.values.filter(_.isPrimaryColoVariant)
+
     val operationCounts = List(
-      DashboardStat("method", Some("(" + methods.map("method:" + _).mkString(" OR ") + ") AND protocol:REST"), primaryServices.map(s => if (s.getProtocol == Protocol.REST && s.hasResourceSchema) s.getResourceSchema.methods.size() else 0).sum),
-      DashboardStat("finder", Some("hasFinder:true AND protocol:REST"), primaryServices.map(s => if (s.getProtocol == Protocol.REST && s.hasResourceSchema) s.getResourceSchema.finders.size() else 0).sum),
-      DashboardStat("action", Some("hasAction:true AND protocol:REST"), primaryServices.map(s => if (s.getProtocol == Protocol.REST && s.hasResourceSchema) s.getResourceSchema.actions.size() else 0).sum)
+      DashboardStat("method", Some("(" + methods.map("method:" + _).mkString(" OR ") + ")"), primaryServices.map(s => if (s.hasResourceSchema) s.getResourceSchema.methods.size() else 0).sum),
+      DashboardStat("finder", Some("hasFinder:true"), primaryServices.map(s => if (s.hasResourceSchema) s.getResourceSchema.finders.size() else 0).sum),
+      DashboardStat("action", Some("hasAction:true"), primaryServices.map(s => if (s.hasResourceSchema) s.getResourceSchema.actions.size() else 0).sum)
     )
 
     val actionCounts = List(
-      searchTermEntry("'get'", "action:\"get*\" AND protocol:REST"),
-      searchTermEntry("'create'", "action:\"create*\" AND protocol:REST"),
-      searchTermEntry("'update'", "action:\"update*\" AND protocol:REST"),
-      searchTermEntry("'delete'", "action:\"delete*\" AND protocol:REST"),
-      searchTermEntry("'find'", "action:\"find*\" AND protocol:REST"),
-      searchTermEntry("'list'", "action:\"list*\" AND protocol:REST")
+      searchTermEntry("'get'", "action:\"get*\""),
+      searchTermEntry("'create'", "action:\"create*\""),
+      searchTermEntry("'update'", "action:\"update*\""),
+      searchTermEntry("'delete'", "action:\"delete*\""),
+      searchTermEntry("'find'", "action:\"find*\""),
+      searchTermEntry("'list'", "action:\"list*\"")
     )
 
     val batchOnlyCounts = List(
@@ -245,12 +233,11 @@ class Snapshot(
 
     val currentDateTime = new DateTime(System.currentTimeMillis())
     val startOfRange = currentDateTime.minusDays(31)
-    val newResources = search(new PagingContext(0, 100), "createdDate:[" + startOfRange.toString("yMMdd") + " TO " + currentDateTime.toString("yMMdd") + "] AND protocol:REST AND isColoVariant:false").getElements
+    val newResources = search(new PagingContext(0, 100), "createdDate:[" + startOfRange.toString("yMMdd") + " TO " + currentDateTime.toString("yMMdd") + "] AND isColoVariant:false").getElements
 
     new DashboardStats(
       newResources.toList.sortBy(_.getCreatedAt).reverse,
       migrationCounts.toList,
-      protocolCounts,
       resourceCounts,
       methodCounts,
       actionCounts,
@@ -266,7 +253,6 @@ case class DashboardStat(name: String, search: Option[String], count: Int)
 case class DashboardStats(
   val newResources: List[Service],
   val migrationCounts: List[DashboardStat],
-  val protocolCounts: List[DashboardStat],
   val resourceCounts: List[DashboardStat],
   val methodCounts: List[DashboardStat],
   val actionCounts: List[DashboardStat],

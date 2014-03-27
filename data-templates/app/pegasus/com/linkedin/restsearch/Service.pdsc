@@ -30,10 +30,6 @@
       "optional": true
     },
     {
-      "name": "protocol",
-      "type": "Protocol"
-    },
-    {
       "name": "resourceSchema",
       "type": "com.linkedin.restli.restspec.ResourceSchema",
       "optional": true

@@ -365,13 +365,12 @@ object Application extends Controller with ConsoleUtils {
       Ok(views.html.clusterlist(snapshot.allClusters, snapshot.metadata))
     } else {
       val page = request.queryString.get("page").getOrElse(Seq("0")).get(0).toInt
-      val protocol = request.queryString.get("protocol") map { _.get(0) }
-      val (services, paging, _) = searchServices(Some(keyword), page, protocol)
-      Ok(views.html.searchresults(keyword, protocol.getOrElse("REST"), services, paging, snapshot.metadata))
+      val (services, paging, _) = searchServices(Some(keyword), page)
+      Ok(views.html.searchresults(keyword, services, paging, snapshot.metadata))
     }
   }
 
-  private def searchServices(keyword: Option[String], page: Int, protocol: Option[String]): (List[Service], CollectionMetadata, DataMap) = {
+  private def searchServices(keyword: Option[String], page: Int): (List[Service], CollectionMetadata, DataMap) = {
     val paging = new PagingContext(page*resultsPerPage, resultsPerPage)
     val response = snapshot.search(paging, keyword.getOrElse(""))
     val collectionMetadata = new CollectionMetadata()

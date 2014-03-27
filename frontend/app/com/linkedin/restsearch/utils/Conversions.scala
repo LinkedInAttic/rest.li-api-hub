@@ -182,12 +182,11 @@ class RichService(service: Service) extends ColoVariantAware {
   }
 
   private def createServiceForSubresource(key: String, schema: ResourceSchema, parent: Service, rootService: Service) = {
-    val currentService = new Service() // key, path, clusters, protocol, resourceSchema, models
+    val currentService = new Service() // key, path, clusters, resourceSchema, models
     currentService.setKey(key)
     currentService.setPath(schema.getPath())
     currentService.setResourceSchema(schema)
     currentService.setClusters(rootService.getClusters())
-    currentService.setProtocol(rootService.getProtocol())
     currentService.setModels(rootService.getModels())
     currentService.setParent(parent)
     currentService
@@ -472,13 +471,13 @@ class RichRestRequest(request: RestRequest) {
       .replaceAll("%26", """<span class="escaped-amperstand">%26</span>""") // escaped &
   }
 
-  private val curliProvidedHeaders = List(
+  private val curlProvidedHeaders = List(
     RestConstants.HEADER_CONTENT_TYPE,
     RestConstants.HEADER_ACCEPT,
     RestConstants.HEADER_RESTLI_PROTOCOL_VERSION)
 
-  def curliExampleHeaders = headers.filterNot{ case (header, _) =>
-    curliProvidedHeaders.contains(header)
+  def curlExampleHeaders = headers.filterNot{ case (header, _) =>
+    curlProvidedHeaders.contains(header)
   }
 
   /*lazy val requestBuilder = {

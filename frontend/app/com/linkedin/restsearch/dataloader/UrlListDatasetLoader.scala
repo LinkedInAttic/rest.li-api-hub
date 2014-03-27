@@ -41,7 +41,6 @@ class UrlListDatasetLoader extends DatasetLoader {
         val path = url.split("/").last
         service.setKey(path)
         service.setPath(path)
-        service.setProtocol(Protocol.REST)
         val serviceCluster = new Cluster()
         serviceCluster.setName(defaultClusterName)
         val serviceClusters = new ClusterArray()

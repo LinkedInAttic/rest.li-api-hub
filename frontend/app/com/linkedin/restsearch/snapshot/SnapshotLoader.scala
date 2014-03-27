@@ -116,8 +116,7 @@ class SnapshotLoader() extends Runnable {
 
     mapAsScalaMap(loadedDataset.getClusters).values foreach { cluster =>
       val (services, errantServices) = cluster.getServices.partition { service =>
-        service.getProtocol() == Protocol.CONTENT_SERVICE ||
-          (service.hasResourceSchema() && service.getResourceSchema().hasContents)
+        (service.hasResourceSchema() && service.getResourceSchema().hasContents)
       }
 
       trackServiceErrors(errantServices, loadedDataset.getServiceErrors)
@@ -134,11 +133,11 @@ class SnapshotLoader() extends Runnable {
       if(!serviceErrors.contains(key)) {
         if(!errantService.hasResourceSchema()) {
           serviceErrors.put(key,
-            "HTTP OPTIONS (curli -X OPTIONS d2://"+key+") request to resource URI in " + fabric + " responded with JSON with missing required " +
+            "HTTP OPTIONS request to resource URI in " + fabric + " responded with JSON with missing required " +
               "'resourceSchema'.")
         } else if (!errantService.getResourceSchema().hasContents) {
           serviceErrors.put(key,
-            "HTTP OPTIONS (curli -X OPTIONS ...) request to resource URI in " + fabric + " responded with JSON with empty 'resourceSchema' " +
+            "HTTP OPTIONS request to resource URI in " + fabric + " responded with JSON with empty 'resourceSchema' " +
               "(it contains no collections, singles, associations or actionSets OR it does but they " +
               "contain no methods, finders or actions).")
         }

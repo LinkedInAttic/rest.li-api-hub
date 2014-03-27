@@ -1,7 +1,6 @@
-@(keyword: String, protocol: String, results: List[com.linkedin.restsearch.Service], paging: com.linkedin.restli.common.CollectionMetadata, metadata: com.linkedin.data.DataMap)
+@(keyword: String, results: List[com.linkedin.restsearch.Service], paging: com.linkedin.restli.common.CollectionMetadata, metadata: com.linkedin.data.DataMap)
 
 @import scala.collection.JavaConversions._
-@import com.linkedin.restsearch.Protocol
 @import com.linkedin.restsearch.template.utils.Conversions._
 
   @main("restli: " + keyword, includeNavSearch = false) {
@@ -9,7 +8,7 @@
   <div class="col-lg-9">
     @freshness(metadata)
 
-    @searchbox(keyword, protocol)
+    @searchbox(keyword)
 
     <br> <br>
 
@@ -23,17 +22,13 @@
       <li class="media">
         <div class="media-body">
           <h4 class="media-heading">
-            @if(result.getProtocol() == Protocol.CONTENT_SERVICE) {
-              <a href="@routes.Application.service(cluster.getName(), result.getKey())">/@result.getKey()</a>
-            } else {
-              @if(result.hasResourceSchema()) {
-                <a @if(result.getResourceSchema.isScoped){class="text-muted"} href="@routes.Application.service(cluster.getName(), result.keysToResource.mkString("."))">/@result.keysToResource.mkString("/")@if(result.getResourceSchema.isScoped){ @result.getResourceSchema.scope}</a>
-              }
+            @if(result.hasResourceSchema()) {
+              <a @if(result.getResourceSchema.isScoped){class="text-muted"} href="@routes.Application.service(cluster.getName(), result.keysToResource.mkString("."))">/@result.keysToResource.mkString("/")@if(result.getResourceSchema.isScoped){ @result.getResourceSchema.scope}</a>
             }
           </h4>
 
           <small class="resultsubtext">
-            @if(result.getProtocol() == Protocol.REST && result.hasResourceSchema()) {
+            @if(result.hasResourceSchema()) {
               @defining(result.getResourceSchema()) { schema =>
                 @if(schema.hasCollection()) {
                   <a href="@routes.Application.model(cluster.getName(), result.getKey(), schema.getSchema())">@schema.schemaName</a> collection
@@ -52,7 +47,7 @@
             d2://@result.getKey()
           </small>
 
-        @if(result.getProtocol() == Protocol.REST && result.hasResourceSchema()) {
+        @if(result.hasResourceSchema()) {
           @defining(result.getResourceSchema()) { schema =>
             <ul class="list-unstyled">
               <li>
@@ -85,7 +80,7 @@
       }
     }
     </ul>
-    @pagination(keyword, protocol, paging)
+    @pagination(keyword, paging)
   </div>
 
 </div>

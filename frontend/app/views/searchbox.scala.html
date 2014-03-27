@@ -1,32 +1,11 @@
-@(keyword: String, protocol: String)
+@(keyword: String)
 
   <form action="@routes.Application.searchResources" method="get">
-  <input type="hidden" name="protocol" value="@protocol" id="protocolEl"/>
   <div class="input-group col-lg-6" style="padding-left: 0px">
     <input id="searchBox" class="form-control" type="text" placeholder="Search Resources" name="keyword" value="@keyword">
     <span class="input-group-btn">
       <button id="searchBtn" type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search"></span></button>
     </span>
-
-    @*<div class="input-group-btn">
-      <button class="btn dropdown-toggle" id="protocolSelect" data-toggle="dropdown">
-        @if(protocol == "ALL") {
-          All
-        }
-        @if(protocol == "REST") {
-          REST
-        }
-        @if(protocol == "CONTENT_SERVICE") {
-          Content Services
-        }
-        <span class="caret"></span>
-      </button>
-      <ul class="dropdown-menu">
-        <li><a href="#" onclick="$('#protocolEl').val('REST'); $('#protocolSelect').html('REST <span class=\'caret\'></span>')">REST Resources</a></li>
-        <li><a href="#" onclick="$('#protocolEl').val('CONTENT_SERVICE'); $('#protocolSelect').html('Content Services <span class=\'caret\'></span>')">Content Services</a></li>
-        <li><a href="#" onclick="$('#protocolEl').val('ALL'); $('#protocolSelect').html('All <span class=\'caret\'></span>')">All</a></li>
-      </ul>
-    </div>*@
   </div>
   <small><a href="#search-help" data-toggle="modal">Advanced Search Options</a></small>
 </form>
@@ -63,7 +42,6 @@ Or, to find resources supporting partial updates:
             <tr><td>keywords</td><td>this is the default search field ("activities" and "keywords: activities" are equivalent) and includes many of the terms from the other fields to make simple search more convenient.</td></tr>
             <tr><td>resource</td><td>the name of a resource.  E.g. "resource:countries"</td></tr>
             <tr><td>cluster</td><td>the name of a cluster.  E.g. "cluster:UscpProxyApi"</td></tr>
-            <tr><td>protocol</td><td>may be either "REST" or "CONTENT_SERVICE"</td></tr>
             <tr><td>isCollection</td><td>matches collection resources.  E.g. "isCollection:true"</td></tr>
             <tr><td>hasComplexKey</td><td>matches collections with complex keys. E.g. "hasComplexKey:true"</td></tr>
             <tr><td>isAssociation</td><td>matches association resources.  E.g. "isAssociation:true"</td></tr>
