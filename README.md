@@ -29,9 +29,12 @@ Features:
 Install and Run
 ---------------
 
-Download: [http://rest.li/releases/apihub/restli-apihub-0.0.2.zip]
+Requirements:
+* Java 1.6+
 
-Unzip the file, e.g.:
+Download latest stable build: http://rest.li/releases/apihub/restli-apihub-0.0.2.zip
+
+Unzip the build, e.g.:
 ```sh
 unzip restli-apihub-0.0.2.zip
 ```
@@ -52,8 +55,16 @@ In your browser, hit `http://localhost:9000/apihub`
 Configuration
 -------------
 
-Edit the data loader strategy configuration properties in  `frontend/conf/application.conf` to include URLs to all your resources.
+Edit the data loader strategy configuration properties in  `conf/application.conf`.
 
+
+* Comment out the test data loader:
+```
+   #dataLoadStrategy=resource
+   #filesystemCacheDir=int-test-dataset.json
+```
+
+* Uncomment the crawling loader, modify the `resourceUrls` list to include URLs to all your rest.li resources.
 ```
    dataLoadStrategy=crawlerFilesystemCached
    filesystemCacheDir=/tmp/apihub
