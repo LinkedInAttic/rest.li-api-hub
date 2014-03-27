@@ -14,7 +14,6 @@ object ApplicationBuild extends Build with restli.All {
   val baseSettings =  super.settings ++ org.sbtidea.SbtIdeaPlugin.settings ++ Seq(
     organization := "com.linkedin.pegasus.gorestli",
     version := "0.0.2",
-    name := "restli-apihub",
     resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
     resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
   )
@@ -39,13 +38,13 @@ object ApplicationBuild extends Build with restli.All {
     "com.linkedin.pegasus" % "restli-docgen" % "1.15.4"
   )
 
-  lazy val main = play.Project("rest-search-frontend", path=file("frontend"))
+  lazy val main = play.Project("restli-apihub", path=file("frontend"))
     .dependsOn(dataTemplates)
     .settings(libraryDependencies ++= appDependencies)
     .settings(baseSettings:_*)
 
 
-  lazy val dataTemplates = play.Project("rest-search-data-templates", path=file("data-templates"))
+  lazy val dataTemplates = play.Project("restli-apihub-data-templates", path=file("data-templates"))
     .compilePegasus()
     .settings(libraryDependencies += "com.linkedin.pegasus" % "data" % "1.15.4")
     .settings(libraryDependencies += "com.linkedin.pegasus" % "restli-common" % "1.15.4")
