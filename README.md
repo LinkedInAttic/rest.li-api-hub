@@ -26,19 +26,33 @@ Features:
 
 * Requests composed in console and be saved to a paste service (gist by default) and shared via a link
 
-Requirements
-------------
+Install and Run
+---------------
 
-* SBT                - 0.13.0+
-* Play               - 2.2.1+
-* rest.li            - 1.15.4+
-* rest.li-sbt-plugin - 0.0.2+
+Download: [http://rest.li/releases/apihub/restli-apihub-0.0.2.zip]
+
+Unzip the file, e.g.:
+```sh
+unzip restli-apihub-0.0.2.zip
+```
+
+Start the application:
+```sh
+Linux/OSX:
+cd restli-apihub-0.0.2/bin
+./restli-apihub
+
+Windows:
+cd restli-apihub-0.0.2\bin
+restli-apihub.bat
+```
+
+In your browser, hit `http://localhost:9000/apihub`
 
 Configuration
 -------------
 
-* Edit the data loader strategy configuration properties in  `frontend/conf/application.conf` 
-  to include URLs to all your resources.
+Edit the data loader strategy configuration properties in  `frontend/conf/application.conf` to include URLs to all your resources.
 
 ```
    dataLoadStrategy=crawlerFilesystemCached
@@ -49,14 +63,17 @@ Configuration
    ]
 ```
 
-How to run
-----------
+Building From Source
+--------------------
 
+Requirements:
+* SBT                - 0.13.0+
+* Play               - 2.2.1+
+
+How to run:
 * `play run`
 * In your browser, hit `http://localhost:9000/apihub`
 
-How to debug
-------------
-
+How to debug:
 * `play debug run`
 * Connect IDE debugger to port 9999
