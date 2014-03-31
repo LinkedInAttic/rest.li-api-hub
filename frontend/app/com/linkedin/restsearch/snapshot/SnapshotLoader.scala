@@ -44,7 +44,7 @@ class SnapshotLoader() extends Runnable {
   private val dataLoadStrategy = config.getString("dataLoadStrategy").getOrElse("crawler")
   private val filesystemCacheDir = config.getString("filesystemCacheDir")
 
-  private val fabric = config.getString("fabric")
+  private val environment = config.getString("enviroment")
   private val loaderClass = config.getString("loaderClass").getOrElse(classOf[UrlListDatasetLoader].getName)
   private val fetcherClass = config.getString("fetcherClass").getOrElse(classOf[UrlIdlFetcher].getName)
 
@@ -133,17 +133,17 @@ class SnapshotLoader() extends Runnable {
       if(!serviceErrors.contains(key)) {
         if(!errantService.hasResourceSchema()) {
           serviceErrors.put(key,
-            "HTTP OPTIONS request to resource URI in " + fabric + " responded with JSON with missing required " +
+            "HTTP OPTIONS request to resource URI in " + environment + " responded with JSON with missing required " +
               "'resourceSchema'.")
         } else if (!errantService.getResourceSchema().hasContents) {
           serviceErrors.put(key,
-            "HTTP OPTIONS request to resource URI in " + fabric + " responded with JSON with empty 'resourceSchema' " +
+            "HTTP OPTIONS request to resource URI in " + environment + " responded with JSON with empty 'resourceSchema' " +
               "(it contains no collections, singles, associations or actionSets OR it does but they " +
               "contain no methods, finders or actions).")
         }
       }
       //if(errantService.getClusters.forall(_.getServers.isEmpty)) {
-      //   serviceErrors.put(key, "No snapshot Urls announced to D2 zookeeper in " + fabric + " for resource.")
+      //   serviceErrors.put(key, "No snapshot Urls announced to D2 zookeeper in " + environment + " for resource.")
       //}
     }
   }

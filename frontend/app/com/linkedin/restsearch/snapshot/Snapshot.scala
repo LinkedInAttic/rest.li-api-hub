@@ -49,6 +49,7 @@ class Snapshot(
     metadata.put("totalClusters", clusters.values.filter(_.isPrimaryColoVariant).size.asInstanceOf[java.lang.Integer])
     metadata.put("totalErrors", serviceErrors.size.asInstanceOf[java.lang.Integer])
     metadata.put("refreshedAt", refreshedAt.asInstanceOf[java.lang.Long])
+    metadata.put("environment", Some(Play.application.configuration.getString("environment")).getOrElse("UNKNOWN ENVIRONMENT"))
     metadata
   }
 
