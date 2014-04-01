@@ -303,6 +303,7 @@ object Application extends Controller with ConsoleUtils {
               case "PUT" => d2request.put(consoleRequest.body)
               case "DELETE" => d2request.delete()
               case "GET" => d2request.get()
+              case "OPTIONS" => d2request.options()
               case _ => throw new IllegalArgumentException("Malformed httpMethod")
             }
 
