@@ -11,6 +11,8 @@ import scala.xml.transform.RewriteRule
 
 object ApplicationBuild extends Build with restli.All {
 
+  val pegasusVersion = "1.15.7"
+
   val baseSettings =  super.settings ++ org.sbtidea.SbtIdeaPlugin.settings ++ Seq(
     organization := "com.linkedin.pegasus",
     version := "0.0.2",
@@ -31,11 +33,11 @@ object ApplicationBuild extends Build with restli.All {
     "org.apache.lucene" % "lucene-core" % "4.2.0",
     "org.apache.lucene" % "lucene-analyzers-common" % "4.2.0",
     "org.apache.lucene" % "lucene-queryparser" % "4.2.0",
-    "com.linkedin.pegasus" % "data" % "1.15.4",
-    "com.linkedin.pegasus" % "restli-common" % "1.15.4",
-    "com.linkedin.pegasus" % "restli-client" % "1.15.4",
-    "com.linkedin.pegasus" % "restli-server" % "1.15.4",
-    "com.linkedin.pegasus" % "restli-docgen" % "1.15.4"
+    "com.linkedin.pegasus" % "data" % pegasusVersion,
+    "com.linkedin.pegasus" % "restli-common" % pegasusVersion,
+    "com.linkedin.pegasus" % "restli-client" % pegasusVersion,
+    "com.linkedin.pegasus" % "restli-server" % pegasusVersion,
+    "com.linkedin.pegasus" % "restli-docgen" % pegasusVersion
   )
 
   lazy val main = play.Project("restli-apihub", path=file("frontend"))
@@ -46,9 +48,9 @@ object ApplicationBuild extends Build with restli.All {
 
   lazy val dataTemplates = play.Project("restli-apihub-data-templates", path=file("data-templates"))
     .compilePegasus()
-    .settings(libraryDependencies += "com.linkedin.pegasus" % "data" % "1.15.4")
-    .settings(libraryDependencies += "com.linkedin.pegasus" % "restli-common" % "1.15.4")
-    .settings(libraryDependencies += "com.linkedin.pegasus" % "d2-schemas" % "1.15.4")
+    .settings(libraryDependencies += "com.linkedin.pegasus" % "data" % pegasusVersion)
+    .settings(libraryDependencies += "com.linkedin.pegasus" % "restli-common" % pegasusVersion)
+    .settings(libraryDependencies += "com.linkedin.pegasus" % "d2-schemas" % pegasusVersion)
     .settings(baseSettings: _*)
 
   override lazy val rootProject = Some(main)
