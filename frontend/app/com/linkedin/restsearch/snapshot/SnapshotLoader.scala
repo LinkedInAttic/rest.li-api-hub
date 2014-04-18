@@ -24,7 +24,7 @@ import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicReference
 import play.api.{Logger, Play}
 import play.api.Play.current
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import SnapshotLoader._
 import com.linkedin.data.template.StringMap
 import com.linkedin.restsearch.template.utils.Conversions._
@@ -114,15 +114,15 @@ class SnapshotLoader() extends Runnable {
       loadedDataset.setServiceErrors(new StringMap())
     }
 
-    mapAsScalaMap(loadedDataset.getClusters).values foreach { cluster =>
-      val (services, errantServices) = cluster.getServices.partition { service =>
+    loadedDataset.getClusters.values.asScala foreach { cluster =>
+      val (services, errantServices) = cluster.getServices.asScala.partition { service =>
         (service.hasResourceSchema() && service.getResourceSchema().hasContents)
       }
 
       trackServiceErrors(errantServices, loadedDataset.getServiceErrors)
 
       val serviceArray = new ServiceArray()
-      serviceArray.addAll(services)
+      serviceArray.addAll(services.asJava)
       cluster.setServices(serviceArray)
     }
   }
@@ -130,7 +130,7 @@ class SnapshotLoader() extends Runnable {
   private def trackServiceErrors(errantServices: Seq[Service], serviceErrors: StringMap) = {
     errantServices foreach { case errantService =>
       val key = errantService.getKey
-      if(!serviceErrors.contains(key)) {
+      if(!serviceErrors.asScala.contains(key)) {
         if(!errantService.hasResourceSchema()) {
           serviceErrors.put(key,
             "HTTP OPTIONS request to resource URI in " + environment + " responded with JSON with missing required " +

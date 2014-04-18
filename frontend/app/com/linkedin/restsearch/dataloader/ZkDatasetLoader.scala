@@ -19,14 +19,13 @@ package com.linkedin.restsearch.dataloader
 import com.linkedin.data.template.{StringMap, StringArray}
 import com.linkedin.restsearch._
 import org.json.JSONObject
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import org.apache.zookeeper.Watcher.Event.KeeperState
 import org.apache.zookeeper.{WatchedEvent, ZooKeeper, Watcher}
 import play.api.Logger
 import com.linkedin.restsearch.dataloader.ZkDatasetLoader._
 import java.util.concurrent.CountDownLatch
 import com.linkedin.d2.{D2Uri, D2UriArray, D2Cluster}
-import java.net.URI
 import org.apache.zookeeper.data.Stat
 
 object ZkDatasetLoader {
@@ -78,7 +77,7 @@ class ZkDatasetLoader(zkHost: String, zkPort: Int) extends DatasetLoader {
     val pairs = for {
       service <- services.values
       clusters = service.getClusters()
-      cluster <- asScalaBuffer(clusters)
+      cluster <- clusters.asScala
     } yield (cluster, service)
 
     val clusters = for ((cluster, pairs) <- pairs.groupBy(_._1))
@@ -87,13 +86,13 @@ class ZkDatasetLoader(zkHost: String, zkPort: Int) extends DatasetLoader {
           case(_, services) => services
         }
         val copyOfCluster = cluster.clone().asInstanceOf[Cluster]
-        copyOfCluster.setServices(new ServiceArray(asJavaCollection(services)))
+        copyOfCluster.setServices(new ServiceArray(services.asJavaCollection))
         (copyOfCluster.getName, copyOfCluster)
       }
 
     joinUrisOntoClusters(clusters, uris)
 
-    dataset.setClusters(new ClusterMap(clusters))
+    dataset.setClusters(new ClusterMap(clusters.asJava))
 
     Logger.info("...zookeeper dataset loaded.")
     dataset
@@ -108,19 +107,19 @@ class ZkDatasetLoader(zkHost: String, zkPort: Int) extends DatasetLoader {
     val serversByClusterName = uris.values
       .groupBy(_.clusterName)
       .map { case (key, values) =>
-        (key, new StringArray(asJavaCollection(values map (_.uri))))
+        (key, new StringArray((values map (_.uri)).asJavaCollection))
       }
 
     for (cluster <- clusters.values;
          servers = serversByClusterName.get(cluster.getName());
          if (servers.isDefined);
          uris <- servers;
-         d2Uris = uris map toD2Uri
+         d2Uris = uris.asScala map toD2Uri
       ) {
       if(!cluster.hasD2Cluster) cluster.setD2Cluster(new D2Cluster())
       val d2Cluster = cluster.getD2Cluster
       if(!d2Cluster.hasUris) d2Cluster.setUris(new D2UriArray())
-      d2Cluster.getUris.addAll(d2Uris)
+      d2Cluster.getUris.addAll(d2Uris.asJava)
     }
   }
 
@@ -134,7 +133,7 @@ class ZkDatasetLoader(zkHost: String, zkPort: Int) extends DatasetLoader {
 
   private def loadChildrenAsStrings(zkClient: ZooKeeper, path: String): Map[String, JsonAndStats] = {
     val keyJsonStrPairs = for {
-      zkKey <- asScalaBuffer(zkClient.getChildren(path, false))
+      zkKey <- zkClient.getChildren(path, false).asScala
       data = zkClient.getData(path + "/" + zkKey, false, null)
       if (data != null)
       stat = zkClient.exists(path + "/" + zkKey, false)
@@ -146,9 +145,9 @@ class ZkDatasetLoader(zkHost: String, zkPort: Int) extends DatasetLoader {
   private def loadGrandchildrenAsStrings(zkClient: ZooKeeper, path: String): Map[String, String] = {
     val grandparentZkKeys = zkClient.getChildren(path, false)
     val results = for {
-      grandparentZkKey <- asScalaBuffer(grandparentZkKeys)
+      grandparentZkKey <- grandparentZkKeys.asScala
       parentZkKeys = zkClient.getChildren(path + "/" + grandparentZkKey , false)
-      parentZkKey <- asScalaBuffer(parentZkKeys)
+      parentZkKey <- parentZkKeys.asScala
       data = try {
         zkClient.getData(path + "/" + grandparentZkKey +  "/" + parentZkKey, false, null)
       } catch {
@@ -225,7 +224,7 @@ class ZkDatasetLoader(zkHost: String, zkPort: Int) extends DatasetLoader {
       clusterName = uriObject.getString("clusterName")
       if(uriObject.has("weights"))
       weights = uriObject.getJSONObject("weights")
-      uris = weights.keys().asInstanceOf[java.util.Iterator[String]]
+      uris = weights.keys().asInstanceOf[java.util.Iterator[String]].asScala
       uri <- uris
     } yield (key, new Uri(uri, clusterName))
     keyUriPairs.toMap

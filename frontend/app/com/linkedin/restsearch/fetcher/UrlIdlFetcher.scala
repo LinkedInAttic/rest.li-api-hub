@@ -16,7 +16,7 @@
 
 package com.linkedin.restsearch.fetcher
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import com.linkedin.restsearch.Service
 import play.api.libs.ws.WS
 import play.api.Logger
@@ -45,8 +45,8 @@ class UrlIdlFetcher extends IdlFetcher {
           val optionsResponse = new OptionsResponseDecoder().wrapResponse(dataMap)
           Logger.info("Fetched " + url)
           SuccessfulScrape(
-            optionsResponse.getResourceSchemas.values().head,
-            optionsResponse.getDataSchemas.toMap
+            optionsResponse.getResourceSchemas.values().asScala.head,
+            optionsResponse.getDataSchemas.asScala.toMap
           )
 
         }

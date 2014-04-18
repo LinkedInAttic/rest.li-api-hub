@@ -16,7 +16,7 @@
 
 package controllers
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import com.linkedin.data.DataMap
 import com.linkedin.restli.common.{ResourceMethod, CollectionMetadata}
 import com.linkedin.restli.server.{ResourceLevel, PagingContext}
@@ -32,7 +32,6 @@ import play.api.libs.concurrent.Execution.Implicits._
 import org.json.JSONObject
 import play.api.Play
 import play.api.Play.current
-import com.linkedin.restsearch.snapshot.ServiceModelsSchemaResolver
 import com.linkedin.restsearch.plugins.{SnapshotInitPlugin}
 import org.apache.commons.lang.StringEscapeUtils
 import play.api.mvc.Action
@@ -50,6 +49,7 @@ import scala.Some
 import play.api.mvc.SimpleResult
 import com.linkedin.restsearch.utils.TypeRenderer
 import com.linkedin.restsearch.security.CsrfProvider
+import com.linkedin.restsearch.resolvers.ServiceModelsSchemaResolver
 
 object Application extends Controller with ConsoleUtils {
   val resultsPerPage = 20
@@ -125,12 +125,7 @@ object Application extends Controller with ConsoleUtils {
         else {
           val service = serviceOpt.get
           val resolver = cluster.get.getResolver(service)
-          val dataSchema = if (service.hasResourceSchema()) {
-            Option(resolver.findDataSchema(service.getResourceSchema().getSchema(), new StringBuilder()))
-          } else {
-            None
-          }
-
+          val dataSchema = service.models.get(service.getResourceSchema.getSchema)
           Ok(views.html.servicedetails(cluster.get, service, dataSchema, new TypeRenderer(cluster.get, service, resolver), service.exampleRequestResponseGenerator(resolver)))
         }
       }
@@ -163,11 +158,7 @@ object Application extends Controller with ConsoleUtils {
         else {
           val service = serviceOpt.get
           val resolver = cluster.get.getResolver(service)
-          val dataSchema = if (service.hasResourceSchema()) {
-            Option(resolver.findDataSchema(fqn, new StringBuilder()))
-          } else {
-            None
-          }
+          val dataSchema = service.models.get(fqn).collect{ case named: NamedDataSchema => named }
           if (!dataSchema.isDefined) NotFound
           else {
             Ok(views.html.modeldetails(cluster.get, service, SchemaToJsonEncoder.schemaToJson(dataSchema.get, JsonBuilder.Pretty.INDENTED), dataSchema.get, new TypeRenderer(cluster.get, service, resolver)))
@@ -201,13 +192,13 @@ object Application extends Controller with ConsoleUtils {
           val exampleGeneratorOpt = service.exampleRequestResponseGenerator(resolver)
           val exampleOpt: Option[ExampleRequestResponse] = exampleGeneratorOpt flatMap { exampleGenerator =>
             val matchingMethods = {
-              resourceSchema.methods.find(_.getMethod() == op).map(method => exampleGenerator.method(ResourceMethod.valueOf(method.getMethod.toUpperCase))).toList
+              resourceSchema.methods.asScala.find(_.getMethod() == op).map(method => exampleGenerator.method(ResourceMethod.valueOf(method.getMethod.toUpperCase))).toList
             } ++ {
-              resourceSchema.finders.find(_.getName() == op).map(finder => exampleGenerator.finder(finder.getName)).toList
+              resourceSchema.finders.asScala.find(_.getName() == op).map(finder => exampleGenerator.finder(finder.getName)).toList
             } ++ {
-              resourceSchema.actions.find(_.getName() == op).map(action => exampleGenerator.action(action.getName, ResourceLevel.COLLECTION)).toList
+              resourceSchema.actions.asScala.find(_.getName() == op).map(action => exampleGenerator.action(action.getName, ResourceLevel.COLLECTION)).toList
             } ++ {
-              resourceSchema.entityActions.find(_.getName() == op).map(entityAction => exampleGenerator.action(entityAction.getName, ResourceLevel.ENTITY)).toList
+              resourceSchema.entityActions.asScala.find(_.getName() == op).map(entityAction => exampleGenerator.action(entityAction.getName, ResourceLevel.ENTITY)).toList
             }
             matchingMethods.headOption
           }
@@ -218,7 +209,7 @@ object Application extends Controller with ConsoleUtils {
             Future(Ok(views.html.console(
               request.method,
               request.uri.toString,
-              request.headers.map{ case(k, v) => k + ":" + v }.mkString("\n"),
+              request.headers.asScala.map{ case(k, v) => k + ":" + v }.mkString("\n"),
               request.input,
               None,//Some(method.exampleResponse(typeRenderer).buildHttpResponse())
               snapshot.metadata,
@@ -308,7 +299,7 @@ object Application extends Controller with ConsoleUtils {
             }
 
             promise.map { d2response =>
-              val headers = d2response.ahcResponse.getHeaders.iterator().toList.map( h => h.getKey() + ": " + h.getValue().mkString(",")).mkString("\n")
+              val headers = mapAsScalaMapConverter(d2response.ahcResponse.getHeaders).asScala.map { case (key, value) => key + ": " + value.asScala.mkString(",")}.mkString("\n")
               val responseBody = if (d2response.body.startsWith("{")) {
                 Some("HTTP/1.1 " + d2response.status + " " + d2response.statusText + "\n" + headers + "\n\n" + prettyPrintJsonResponse(new JSONObject(d2response.body)))
               } else {
@@ -348,24 +339,16 @@ object Application extends Controller with ConsoleUtils {
     } else {
       jsonResponse.toString(2)
     }
-
-    // add deco links to all URNs in response body
-    val escaped = StringEscapeUtils.escapeHtml(prettyJson)
-    /*val escaped = "(\"|&quot;)(urn:li:.*)(\"|&quot;)".r.replaceAllIn(escaped, m => {
-        val urn = m.group(2)
-        "<a href=\"" + ExternalSites.createDecoUrl(urn) + "\">" + urn + "</a>"
-      }
-    )*/
-    escaped
+    StringEscapeUtils.escapeHtml(prettyJson)
   }
 
   def searchResources = Action { request =>
-    val keyword = request.queryString.get("keyword").getOrElse(List("")).get(0)
+    val keyword = request.queryString.get("keyword").getOrElse(List("")).head
 
     if (keyword == "") {
       Ok(views.html.clusterlist(snapshot.allClusters, snapshot.metadata))
     } else {
-      val page = request.queryString.get("page").getOrElse(Seq("0")).get(0).toInt
+      val page = request.queryString.get("page").getOrElse(Seq("0")).head.toInt
       val (services, paging, _) = searchServices(Some(keyword), page)
       Ok(views.html.searchresults(keyword, services, paging, snapshot.metadata))
     }
@@ -377,8 +360,8 @@ object Application extends Controller with ConsoleUtils {
     val collectionMetadata = new CollectionMetadata()
     collectionMetadata.setStart(page*resultsPerPage)
     collectionMetadata.setCount(resultsPerPage)
-    collectionMetadata.setTotal(response.getTotal())
-    (response.getElements().toList, collectionMetadata, response.getMetadata().data())
+    collectionMetadata.setTotal(response.getTotal)
+    (response.getElements.asScala.toList, collectionMetadata, response.getMetadata.data())
   }
 
   /**
@@ -394,7 +377,7 @@ object Application extends Controller with ConsoleUtils {
               if(sub.hasResourceSchema && sub.getResourceSchema.isScoped) {
                 "class=\"text-muted\""
               } else ""
-            } + " href=\"" + routes.Application.service(cluster.getName(), sub.keysToResource.mkString(".")) +"\">/" + sub.getKey() +
+            } + " href=\"" + routes.Application.service(cluster.getName, sub.keysToResource.mkString(".")) +"\">/" + sub.getKey +
             {
               if(sub.hasResourceSchema && sub.getResourceSchema.isScoped) {
                 " " + sub.getResourceSchema.scope

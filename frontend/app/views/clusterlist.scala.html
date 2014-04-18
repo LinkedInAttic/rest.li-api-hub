@@ -16,65 +16,52 @@
       Post any news here.
     </div>*@
 
-    <h2>All Available Resources</h2>
+  </div>
+</div>
 
+<div class="row">
+  <div class="col-lg-12">
+    <h2>All Available Resources</h2>
+    <hr>
     @if(clusters.size == 1) {
       @clusterservices(clusters(0))
     } else {
-      <div>
       @defining(clusters.filter(_.getName().size > 0).groupBy(_.getName().charAt(0).toUpper)) { groupedClusters =>
-        <ul class="pagination pagination-sm">
+        <div class="js-masonry" data-masonry-options='{ "itemSelector": ".masonry-item", "columnWidth": 350 }'>
           @defining('A' to 'Z') { letters =>
             @letters.map { letter =>
-              <li @if(!groupedClusters.contains(letter)){class="disabled"}><a href="#@letter">@letter</a></li>
-            }
-          }
-        </ul>
-
-        <ul class="media-list">
-          @defining('A' to 'Z') { letters =>
-            @letters.map { letter =>
-              <section class="api-list" id="@letter">
+              <span class="api-list" id="@letter"></span>
                 @groupedClusters.get(letter).map { clusters =>
-                  @if(letter != 'A') {<div class="page-header"></div>}
                   @clusters.map { cluster =>
                     @if(cluster.services(primaryOnly=true).nonEmpty) {
-                      <li class="media">
-                        <h4 class="media-heading">
-                          @defining(cluster.coloVariants(clusters)) { variants =>
-                            @if(variants.nonEmpty) {
-                          <a href="@routes.Application.cluster(cluster.getName())">@cluster.canonicalColoVariantIdentifier</a>
-                              <span class="text-muted">-
-                                <ul class="comma-separated">
-                                  @variants.map { variant =>
-                                  <li><a class="text-muted" href="@routes.Application.cluster(variant.getName())">@variant.coloVariantSuffix</a></li>
-                                  }
-                                </ul>
-                              </span>
-                            } else {
-                              <a href="@routes.Application.cluster(cluster.getName())">@cluster.getName()</a>
+                      <div class="masonry-item thumbnail">
+                        <div class="caption">
+                          <h4>
+                            @defining(cluster.coloVariants(clusters)) { variants =>
+                              @if(variants.nonEmpty) {
+                                <a href="@routes.Application.cluster(cluster.getName())">@cluster.canonicalColoVariantIdentifier</a>
+                                <span class="text-muted">-
+                                  <ul class="comma-separated">
+                                    @variants.map { variant =>
+                                    <li><a class="text-muted" href="@routes.Application.cluster(variant.getName())">@variant.coloVariantSuffix</a></li>
+                                    }
+                                  </ul>
+                                </span>
+                              } else {
+                                <a href="@routes.Application.cluster(cluster.getName())">@cluster.getName()</a>
+                              }
                             }
-                          }
-                        </h4>
-                        @clusterservices(cluster)
-                      </li>
+                          </h4>
+                          @clusterservices(cluster)
+                        </div>
+                      </div>
                     }
                   }
                 }
-              </section>
+              }
             }
-          }
-        </ul>
-
-        <ul class="pagination pagination-sm">
-          @defining('A' to 'Z') { letters =>
-            @letters.map { letter =>
-              <li @if(!groupedClusters.contains(letter)){class="disabled"}><a href="#@letter">@letter</a></li>
-            }
-          }
-        </ul>
+        </div>
       }
-    </div>
     }
 
   </div>

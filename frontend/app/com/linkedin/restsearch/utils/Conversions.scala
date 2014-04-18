@@ -18,11 +18,8 @@ package com.linkedin.restsearch.template.utils
 
 import com.linkedin.restli.restspec._
 import com.linkedin.restsearch.{Dataset, ClusterSource, Cluster, Service}
-import scala.Some
 import scala.collection.JavaConverters._
-import scala.collection.JavaConversions._
 import com.linkedin.restsearch.template.utils.Conversions._
-import com.linkedin.restsearch.snapshot.{SnapshotSchemaResolver, ServiceModelsSchemaResolver}
 import com.linkedin.d2.D2Uri
 import com.linkedin.data.schema.DataSchemaResolver
 import org.json.JSONObject
@@ -32,6 +29,7 @@ import com.linkedin.restli.common.RestConstants
 import java.lang.IllegalArgumentException
 import play.api.Play
 import play.api.Play.current
+import com.linkedin.restsearch.resolvers.{SnapshotSchemaResolver, ServiceModelsSchemaResolver}
 
 /**
  * Use implicit conversions to mix in additional utility methods to the data template classes.
@@ -82,6 +80,20 @@ class RichService(service: Service) extends ColoVariantAware {
   override def coloVariantIdentifier = service.getKey
   def isPrimaryColoVariant = /*(service.hasDefaultService && service.isDefaultService) ||*/ !isColoVariant
 
+  lazy val models = {
+    val resolver = new ServiceModelsSchemaResolver(service)
+    service.getModels.asScala.map { case (modelName, modelJson) =>
+      try {
+        modelName -> resolver.findModel(service, modelName)
+      } catch {
+        case _: Throwable => modelName -> None
+      }
+    }.collect {
+      case (k, Some(v)) => k -> v
+    }
+  }
+
+
   /**
    * Count of resources under this resource, including itself and it's subresources
    */
@@ -120,7 +132,7 @@ class RichService(service: Service) extends ColoVariantAware {
   def allSubresourcesAsServices: List[Service] = {
     service.allSubresources match {
       case Some(subresources) => {
-        subresources.map { subresource =>
+        subresources.asScala.map { subresource =>
           createServiceForSubresource(subresource.getName, subresource, service, service.findRoot)
         }.toList
       }
@@ -174,7 +186,7 @@ class RichService(service: Service) extends ColoVariantAware {
 
   def exampleRequestResponseGenerator(resolver: DataSchemaResolver) : Option[ExampleRequestResponseGenerator] = {
     try {
-      Some(new ExampleRequestResponseGenerator(service.getParents.map(_.getResourceSchema), service.getResourceSchema, resolver))
+      Some(new ExampleRequestResponseGenerator(service.getParents.map(_.getResourceSchema).asJava, service.getResourceSchema, resolver))
     } catch {
       case iae: IllegalArgumentException => None // workaround until fix in https://rb.corp.linkedin.com/r/255178/ is rolled out
       case e: Throwable => throw e
@@ -204,12 +216,12 @@ class RichCluster(cluster: Cluster) extends ColoVariantAware {
   }
 
   override def coloVariantIdentifier = cluster.getName
-  def isPrimaryColoVariant = !isColoVariant || cluster.getServices.toList.exists(_.isPrimaryColoVariant)
+  def isPrimaryColoVariant = !isColoVariant || cluster.getServices.asScala.exists(_.isPrimaryColoVariant)
 
   // finds all other services in this cluster that are variants of the given service
   def coloVariants(primary: Service) = {
     val primaryKey = primary.getKey
-    val variants = cluster.getServices.filter { service =>
+    val variants = cluster.getServices.asScala.filter { service =>
       primaryKey == service.canonicalColoVariantIdentifier && service.isColoVariant
     }
     variants.sortBy(_.coloVariantSuffix)
@@ -224,13 +236,13 @@ class RichCluster(cluster: Cluster) extends ColoVariantAware {
   }
 
   def services(primaryOnly: Boolean = true): List[Service] = {
-    val services = cluster.getServices.toList
+    val services = cluster.getServices.asScala.toList
     if(primaryOnly) services.filter(_.isPrimaryColoVariant) else services
   }
 
   def uris: List[D2Uri] = {
     if(!cluster.hasD2Cluster || !cluster.getD2Cluster().hasServices()) List()
-    else cluster.getD2Cluster.getUris.toList
+    else cluster.getD2Cluster.getUris.asScala.toList
   }
 }
 
@@ -353,7 +365,7 @@ class RichResourceSchema(schema: ResourceSchema) extends ResourceSchemaPart {
       }
     } + {
       if (isInternalToSuperblock) {
-        "(Internal to Superblock)"
+        "(Superblock Internal)"
       } else {
         ""
       }
@@ -424,10 +436,10 @@ class RichResourceSchema(schema: ResourceSchema) extends ResourceSchemaPart {
    * @return Total subresources under this schema
    */
   def subresourceCount: Int = {
-    subresources.size() + subresources.map(_.subresourceCount).sum
+    subresources.size() + subresources.asScala.map(_.subresourceCount).sum
   }
 
-  def hasContents = schema.methods.nonEmpty || schema.actions.nonEmpty || schema.entityActions.nonEmpty || schema.finders.nonEmpty
+  def hasContents = schema.methods.asScala.nonEmpty || schema.actions.asScala.nonEmpty || schema.entityActions.asScala.nonEmpty || schema.finders.asScala.nonEmpty
 
   def entityPath = {
     if(schema.hasCollection && schema.getCollection.hasEntity) {
@@ -444,8 +456,8 @@ class RichResourceSchema(schema: ResourceSchema) extends ResourceSchemaPart {
 
 class RichDataset(dataset: Dataset) {
   def servicesMap : Map[String, Service] = {
-    val servicesByName = mapAsScalaMap(dataset.getClusters) map { case (clusterName, cluster) =>
-      cluster.getServices.toList map { service =>
+    val servicesByName = dataset.getClusters.asScala map { case (clusterName, cluster) =>
+      cluster.getServices.asScala.toList map { service =>
         (service.getKey, service)
       }
     }
@@ -476,7 +488,7 @@ class RichRestRequest(request: RestRequest) {
     RestConstants.HEADER_ACCEPT,
     RestConstants.HEADER_RESTLI_PROTOCOL_VERSION)
 
-  def curlExampleHeaders = headers.filterNot{ case (header, _) =>
+  def curlExampleHeaders = headers.asScala.filterNot{ case (header, _) =>
     curlProvidedHeaders.contains(header)
   }
 

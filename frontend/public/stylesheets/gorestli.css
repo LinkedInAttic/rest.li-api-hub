@@ -33,3 +33,9 @@ ul.comma-separated li:last-child:after { content: ""; }
 .padded {
   padding: 15px;
 }
+
+.masonry-item {
+
+  width: 330px;
+
+}

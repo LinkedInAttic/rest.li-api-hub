@@ -1,5 +1,5 @@
 @(cluster: com.linkedin.restsearch.Cluster, service: com.linkedin.restsearch.Service, modelJsonRaw: String, dataSchema: com.linkedin.data.schema.NamedDataSchema, typeRenderer: com.linkedin.restsearch.utils.TypeRenderer)
-@import scala.collection.JavaConversions._
+@import scala.collection.JavaConverters._
 @import com.linkedin.data.schema._
 
 @main("restli: " + dataSchema.getName) {
@@ -9,9 +9,9 @@
     <li class="active">@dataSchema.getName Model</li>
   </ul>
 
-  <h2 @if(dataSchema.getProperties().contains("deprecated")){style="text-decoration:line-through"}>@dataSchema.getName</h2>
+  <h2 @if(dataSchema.getProperties().asScala.contains("deprecated")){style="text-decoration:line-through"}>@dataSchema.getName</h2>
 
-  @if(dataSchema.getProperties().contains("deprecated")){
+  @if(dataSchema.getProperties().asScala.contains("deprecated")){
     <div class="alert alert-danger">
       <b>Deprecated!</b>
       @dataSchema.getProperties().get("deprecated") match {

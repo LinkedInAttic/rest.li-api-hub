@@ -26,7 +26,7 @@ import org.apache.lucene.queryparser.classic.{ParseException, QueryParser}
 import org.apache.lucene.search._
 import org.apache.lucene.store._
 import org.apache.lucene.util.Version
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.collection.mutable
 import com.linkedin.data.template.DataTemplateUtil
 import com.linkedin.data.schema.DataSchema
@@ -97,7 +97,7 @@ class LuceneSearchIndex extends SearchIndex {
     try {
       val terms = new java.util.HashSet[Term]()
       queryIn.extractTerms(terms)
-      if(terms.exists(term => overrideTerms.contains(term.field()))) { // run the exact query provided
+      if(terms.asScala.exists(term => overrideTerms.contains(term.field()))) { // run the exact query provided
         queryIn
       } else { // rewrite query to exclude colo variants
         val bq = new BooleanQuery();
@@ -119,8 +119,8 @@ class LuceneSearchIndex extends SearchIndex {
     val indexWriter =  new IndexWriter(directory, config)
     val start = System.nanoTime()
     val keys = for {
-      cluster <- dataset.getClusters.values()
-      service <- asScalaBuffer(cluster.getServices).par // index in parallel
+      cluster <- dataset.getClusters.values().asScala
+      service <- cluster.getServices.asScala.par // index in parallel
       schema = service.getResourceSchema()
     } yield {
       val key = service.keysToResource.mkString(".")
@@ -253,15 +253,15 @@ class LuceneSearchIndex extends SearchIndex {
         doc.add(new Field("isSimple", "true", TextField.TYPE_NOT_STORED))
       }
 
-      if (schema.methods.nonEmpty) {
+      if (schema.methods.asScala.nonEmpty) {
         indexMethods(doc, keywords, schema.methods);
       }
 
-      if (schema.actions.nonEmpty) {
+      if (schema.actions.asScala.nonEmpty) {
         indexActions(doc, keywords, schema.actions)
       }
 
-      if (schema.finders.nonEmpty) {
+      if (schema.finders.asScala.nonEmpty) {
         indexFinders(doc, keywords, schema.finders)
       }
     }
@@ -283,12 +283,12 @@ class LuceneSearchIndex extends SearchIndex {
   }
 
   private def indexFinders(doc: Document, keywords: mutable.ListBuffer[String], finders: FinderSchemaArray) = {
-    if(finders.nonEmpty) {
+    if(finders.asScala.nonEmpty) {
       doc.add(new Field("hasFinder", "true", TextField.TYPE_NOT_STORED))
     }
 
     val finderNames = new mutable.ListBuffer[String]
-    for (finder <- asScalaBuffer(finders)) {
+    for (finder <- finders.asScala) {
       indexMethodAnnotations(doc, keywords, finder)
       indexFinder(keywords, finder)
       finderNames += finder.getName
@@ -321,7 +321,7 @@ class LuceneSearchIndex extends SearchIndex {
 
   private def indexMethods(doc: Document, keywords: mutable.ListBuffer[String], methods: RestMethodSchemaArray) {
     val methodNames = new mutable.ListBuffer[String]
-    for (method <- asScalaBuffer(methods)) {
+    for (method <- methods.asScala) {
       indexMethodAnnotations(doc, keywords, method)
       indexMethod(keywords, method)
       methodNames += method.getMethod().replaceAll("_", "")
@@ -341,7 +341,7 @@ class LuceneSearchIndex extends SearchIndex {
 
   private def indexAssocKeys(doc: Document, keywords: mutable.ListBuffer[String], assocKeys: AssocKeySchemaArray) {
     val keys = new mutable.ListBuffer[String]
-    for (assocKey <- assocKeys) {
+    for (assocKey <- assocKeys.asScala) {
       if (assocKey.hasName) {
         keywords += assocKey.getName
         keys += assocKey.getName
@@ -355,7 +355,7 @@ class LuceneSearchIndex extends SearchIndex {
   }
 
   private def indexEntity(doc: Document, keywords: mutable.ListBuffer[String], indexWriter: IndexWriter, service: Service, entity: EntitySchema) = {
-    if(entity.hasActions && entity.getActions.nonEmpty) {
+    if(entity.hasActions && entity.getActions.asScala.nonEmpty) {
       doc.add(new Field("hasEntityAction", "true", TextField.TYPE_NOT_STORED))
       indexActions(doc, keywords, entity.getActions)
     }
@@ -365,11 +365,11 @@ class LuceneSearchIndex extends SearchIndex {
   }
 
   private def indexActions(doc: Document, keywords: mutable.ListBuffer[String], actions: ActionSchemaArray) = {
-    if(actions.nonEmpty) {
+    if(actions.asScala.nonEmpty) {
       doc.add(new Field("hasAction", "true", TextField.TYPE_NOT_STORED))
     }
     val actionNames = new mutable.ListBuffer[String]
-    for (action <- asScalaBuffer(actions)) {
+    for (action <- actions.asScala) {
       indexMethodAnnotations(doc, keywords, action)
       indexActionSchema(keywords, action)
       actionNames += action.getName
@@ -392,7 +392,7 @@ class LuceneSearchIndex extends SearchIndex {
   }
 
   private def indexParameters(keywords: mutable.ListBuffer[String], parameters: ParameterSchemaArray) {
-    for (parameter <- asScalaBuffer(parameters)) {
+    for (parameter <- parameters.asScala) {
       if (parameter.hasName) {
         keywords += parameter.getName
       }

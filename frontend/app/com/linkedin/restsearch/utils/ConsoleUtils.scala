@@ -14,7 +14,7 @@
    limitations under the License.
 */
 
-package controllers
+package com.linkedin.restsearch.utils
 
 import scala.util.matching.Regex.Match
 import scala.util.matching.Regex

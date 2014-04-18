@@ -19,7 +19,7 @@ package com.linkedin.restsearch.utils
 import com.linkedin.restsearch.Cluster
 import com.linkedin.restsearch.Service
 import controllers.routes
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import org.json.JSONObject
 import org.json.JSONArray
 import com.linkedin.restsearch.template.utils.Conversions._
@@ -32,47 +32,7 @@ import com.linkedin.restli.restspec._
 
 object TypeRenderer {
   val defaultSpec = new SchemaSampleDataGenerator.DataGenerationOptions()
-  def schemaToJsonExample(schema: DataSchema) : String = {
-    try {
-    SchemaSampleDataGenerator.buildData(schema, defaultSpec) match {
-      case dataMap : DataMap => {
-        val result = new String(DataMapUtils.mapToBytes(dataMap), "UTF-8")
-        if(result.startsWith("{")) {
-          new JSONObject(result).toString(2)
-        } else {
-          result
-        }
-      }
-      case dataList : DataList => {
-        val result = new String(DataMapUtils.listToBytes(dataList), "UTF-8")
-        if(result.startsWith("[")) {
-          new JSONArray(result).toString(2)
-        } else {
-          result
-        }
-      }
-      case value => value.toString
-    }
-    } catch {
-      case ial: IllegalArgumentException => "{'message': 'Unable to generate example: "+ial.getMessage+"'}"
-      case e: Throwable => throw e
-    }
-  }
 
-  // This is a super lame hack
-  // TODO: find way to convert primitive to example using SchemaSampleDataGenerator
-  def exampleForPrimitive(typeString: String) = {
-    val box = new JSONObject()
-    box.put("type", "record")
-    box.put("name", "temp")
-    val fields = new JSONArray()
-    box.put("fields", fields)
-    val field = new JSONObject()
-    fields.put(field)
-    field.put("name", "boxed")
-    field.put("type", typeString)
-    new JSONObject(schemaToJsonExample(DataTemplateUtil.parseSchema(box.toString))).get("boxed")
-  }
 
   def stripPackage(fullyQualifiedName: String) = {
     fullyQualifiedName.split("\\.").lastOption getOrElse(fullyQualifiedName)
@@ -86,9 +46,9 @@ object TypeRenderer {
       else stripPackage(keyType)
     }
 
-    val methodName = method.getMethod()
+    val methodName = method.getMethod
     val fixedKeyType = convertKeyType(keyType)
-    val resourceReturn = service.getResourceSchema().getSchema()
+    val resourceReturn = service.getResourceSchema.getSchema
     if (methodName.equals("get")) {
       typeRenderer.typeStringToHtml(resourceReturn)
     } else if (methodName.equals("batch_get")) {
@@ -128,9 +88,9 @@ class TypeRenderer(cluster: Cluster, service: Service, val resolver: DataSchemaR
   // params are a special case because they have a non-standard way of representing maps and arrays.  This is being fixed but for backward-compat
   // we need to handle the case.
   def paramTypeToHtml(param : ParameterSchema) = param.getType match {
-    case "array" => typeStringToHtml(param.getItems()) + "[]"
-    case "map" => "Map (string->" + typeStringToHtml(param.getItems()) + ")"
-    case _ => typeStringToHtml(param.getType())
+    case "array" => typeStringToHtml(param.getItems) + "[]"
+    case "map" => "Map (string->" + typeStringToHtml(param.getItems) + ")"
+    case _ => typeStringToHtml(param.getType)
   }
 
   def typeStringToHtml(typeString: String) = {
@@ -153,24 +113,24 @@ class TypeRenderer(cluster: Cluster, service: Service, val resolver: DataSchemaR
     schema match {
       case named: NamedDataSchema => {
         "<a href='" +
-          routes.Application.model(cluster.getName(), rootService.getKey(), named.getNamespace() +
-          "." + named.getName()) + "'>"+ named.getName() +
+          routes.Application.model(cluster.getName, rootService.getKey, named.getNamespace +
+          "." + named.getName) + "'>"+ named.getName +
           "</a>"
       }
       case array: ArrayDataSchema => {
-        schemaToHtml(array.getItems()) + "[]"
+        schemaToHtml(array.getItems) + "[]"
       }
       case map: MapDataSchema => {
-        "Map (string->" + schemaToHtml(map.getValues()) + ")"
+        "Map (string->" + schemaToHtml(map.getValues) + ")"
       }
       case union: UnionDataSchema => {
-        val unionTypesHtml = union.getTypes().map { t =>
+        val unionTypesHtml = union.getTypes.asScala.map { t =>
           schemaToHtml(t)
         }
         "Union [" + unionTypesHtml.mkString(", ") + "]"
       }
       case primitive: PrimitiveDataSchema => {
-        primitive.getType().toString().toLowerCase()
+        primitive.getType.toString.toLowerCase
       }
     }
   }
@@ -182,7 +142,7 @@ class TypeRenderer(cluster: Cluster, service: Service, val resolver: DataSchemaR
   private def modelLink(fqn: String) = {
     val rootService = service.findRoot
     if(fqn.contains(".")) {
-      "<a href=\"" + routes.Application.model(cluster.getName(), rootService.getKey(), fqn) + "\">" + stripPackage(fqn) + "</a>"
+      "<a href=\"" + routes.Application.model(cluster.getName, rootService.getKey, fqn) + "\">" + stripPackage(fqn) + "</a>"
     } else {
       fqn
     }

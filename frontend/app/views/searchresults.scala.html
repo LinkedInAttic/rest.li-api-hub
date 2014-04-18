@@ -1,6 +1,6 @@
 @(keyword: String, results: List[com.linkedin.restsearch.Service], paging: com.linkedin.restli.common.CollectionMetadata, metadata: com.linkedin.data.DataMap)
 
-@import scala.collection.JavaConversions._
+@import scala.collection.JavaConverters._
 @import com.linkedin.restsearch.template.utils.Conversions._
 
   @main("restli: " + keyword, includeNavSearch = false) {

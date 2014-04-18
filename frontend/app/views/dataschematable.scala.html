@@ -1,6 +1,6 @@
 @(dataSchema: com.linkedin.data.schema.DataSchema, typeRenderer: com.linkedin.restsearch.utils.TypeRenderer)
 @import com.linkedin.data.schema._
-@import scala.collection.JavaConversions._
+@import scala.collection.JavaConverters._
 @import com.linkedin.data.DataMap
 
 @dataSchema match {
@@ -14,17 +14,17 @@
         </tr>
       </thead>
       <tbody>
-        @dataSchema.getFields().sortBy(_.getName.toLowerCase).map { field =>
+        @dataSchema.getFields().asScala.sortBy(_.getName.toLowerCase).map { field =>
           <tr>
             <td>
-              <span @if(field.getProperties().contains("deprecated")){style="text-decoration:line-through"}>@field.getName</span>
+              <span @if(field.getProperties().asScala.contains("deprecated")){style="text-decoration:line-through"}>@field.getName</span>
             </td>
             <td>
               @if(field.getOptional()){ optional }
               @Html(typeRenderer.schemaToHtml(field.getType()))@if(field.getDefault() != null){, default="@field.getDefault()"}
             </td>
             <td>
-              @if(field.getProperties().contains("deprecated")){
+              @if(field.getProperties().asScala.contains("deprecated")){
                 @field.getProperties().get("deprecated") match {
                     case deprecated: String => {
                       <span class="label label-danger">Deprecated!</span> @deprecated

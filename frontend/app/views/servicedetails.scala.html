@@ -10,7 +10,7 @@
 @import com.linkedin.restli.common.ResourceMethod
 @import com.linkedin.restsearch.ClusterSource
 @import com.linkedin.restli.client.uribuilders.RestliUriBuilderUtil
-@import scala.collection.JavaConversions._
+@import scala.collection.JavaConverters._
 @import com.linkedin.data.template.StringArray
 @import com.linkedin.restli.restspec._
 @import com.linkedin.restsearch.utils._
@@ -45,7 +45,7 @@
       <section id="data-schema">
         <div class="panel panel-default">
           <div class="panel-heading">
-            <h3 class="panel-title @if(record.getProperties().contains("deprecated")){deprecated}">
+            <h3 class="panel-title @if(record.getProperties().asScala.contains("deprecated")){deprecated}">
               @record.getName() Schema @*Html(typeRenderer.typeStringToHtml(record.getFullName())) Data Schema*@
             </h3>
           </div>
@@ -79,7 +79,7 @@
     val assocKeys = assocKeyNames.flatMap { assocKeyName =>
       service.getResourceSchema.getAssociation.getAssocKeys.find(_.getName == assocKeyName)
     }
-    Some(new AssocKeySchemaArray(assocKeys))
+    Some(new AssocKeySchemaArray(assocKeys.asJavaCollection))
   } else {
     None
   }
@@ -161,7 +161,7 @@
 
 @httpRequest(request: RestRequest) = {
 <pre>@request.getMethod @request.exampleUri
-@request.headers.map{ case(key, value)=>@key: @value}.mkString("\n")
+@request.headers.asScala.map{ case(key, value)=>@key: @value}.mkString("\n")
 @if(request.input.isDefined){
 @request.input.get}</pre>
 }
@@ -176,7 +176,7 @@
 @response(response: RestResponse) = {
 @if(response != null) {
 <pre>HTTP/1.1 @response.status
-@response.headers.map{ case(key, value)=>@key: @value}.mkString("\n")
+@response.headers.asScala.map{ case(key, value)=>@key: @value}.mkString("\n")
 @if(response.body.isDefined){
 @response.body.get</pre>
 }}}
@@ -429,7 +429,7 @@
       @if(required.nonEmpty) {
         <li>
           Required Parameters:
-          @parameterList(required)
+          @parameterList(required.toSeq)
         </li>
       }
     }
@@ -438,7 +438,7 @@
       @if(optional.nonEmpty) {
         <li>
           Optional Parameters:
-          @parameterList(optional)
+          @parameterList(optional.toSeq)
         </li>
       }
     }

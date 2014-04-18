@@ -21,14 +21,14 @@ import com.linkedin.restli.restspec.ResourceSchema
 import com.linkedin.restsearch.Service
 
 sealed abstract class ScrapeResult()
-case class SuccessfulScrape(val resourceSchema: ResourceSchema, val dataSchemas: Map[String, DataSchema]) extends ScrapeResult()
-case class FailedScrape(val ex: Throwable) extends ScrapeResult() {
+case class SuccessfulScrape(resourceSchema: ResourceSchema, dataSchemas: Map[String, DataSchema]) extends ScrapeResult()
+case class FailedScrape(ex: Throwable) extends ScrapeResult() {
   override def toString = {
     Option(ex.getMessage).getOrElse("unknown error of type: " + ex.getClass)
   }
 }
 /**
- * Fetches idl (aka resource schemas) and data schemas from a d2 service name.
+ * Fetches idl (aka resource schemas) and data schemas for a service.
  * @author jbetz
  *
  */

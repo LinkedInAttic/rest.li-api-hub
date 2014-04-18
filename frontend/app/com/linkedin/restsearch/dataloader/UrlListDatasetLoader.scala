@@ -19,7 +19,7 @@ package com.linkedin.restsearch.dataloader
 import play.api.Play
 import play.api.Play.current
 import com.linkedin.restsearch._
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 class UrlListDatasetLoader extends DatasetLoader {
   private val urlListOpt = Play.application.configuration.getStringList("resourceUrls")
@@ -35,7 +35,7 @@ class UrlListDatasetLoader extends DatasetLoader {
     cluster.setName(defaultClusterName)
 
     urlListOpt foreach { urlList =>
-      urlList foreach { url =>
+      urlList.asScala foreach { url =>
         val service = new Service()
         service.setUrl(url)
         val path = url.split("/").last

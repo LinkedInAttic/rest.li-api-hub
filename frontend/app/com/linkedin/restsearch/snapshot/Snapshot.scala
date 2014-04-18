@@ -21,13 +21,14 @@ import com.linkedin.data.DataMap
 import com.linkedin.restli.server._
 import com.linkedin.restsearch._
 import com.linkedin.restsearch.search._
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.math
 import com.linkedin.restli.restspec.ResourceSchema
 import com.linkedin.restsearch.template.utils.Conversions._
 import play.Play
-import org.joda.time.{LocalDateTime, YearMonth, LocalDate, DateTime}
-import org.joda.time
+import com.linkedin.restsearch.dashboard.DashboardStats
+import com.linkedin.restsearch.resolvers.ServiceModelsSchemaResolver
+import com.linkedin.data.schema.DataSchema
 
 /**
  * Provides access to a snapshot of d2 (cluster, server, uri), idl (restspec.json) and data schema (.pdsc) data.
@@ -39,9 +40,11 @@ class Snapshot(
   val refreshedAt: Long,
   val searchIndex: SearchIndex) {
 
-  val clusters = dataset.getClusters().toMap
+  val clusters = dataset.getClusters().asScala.toMap
   val services = dataset.servicesMap
-  val serviceErrors = dataset.getServiceErrors().toMap
+  val serviceErrors = dataset.getServiceErrors().asScala.toMap
+
+  lazy val models = services.values.map(_.models).reduce(_ ++ _).toMap
 
   val metadata = {
     val metadata = new DataMap()
@@ -55,7 +58,7 @@ class Snapshot(
 
   def search(pagingContext: PagingContext, queryString: String): CollectionResult[Service, ServiceQueryMetadata] = {
     val results = if (queryString == null || queryString.trim().equals("")) {
-        collectionAsScalaIterable(services.values)
+        services.values
     } else {
       for {
         key <- searchIndex.search(queryString)
@@ -73,7 +76,7 @@ class Snapshot(
     metadata.setRefreshedAt(refreshedAt)
     metadata.setTotalEntries(services.size)
     val resultPage = results.slice(fromIndex, toIndex)
-    new CollectionResult[Service, ServiceQueryMetadata](seqAsJavaList(resultPage.toSeq), int2Integer(results.size), metadata)
+    new CollectionResult[Service, ServiceQueryMetadata](resultPage.toSeq.asJava, int2Integer(results.size), metadata)
   }
 
   private def isValidSearchResult(service: Service) = {
@@ -92,9 +95,9 @@ class Snapshot(
       val serviceKeyParts = serviceKey.split("\\.").toList
       serviceKeyParts match {
         case Nil => None
-        case onlyKey :: Nil => cluster.getServices().find(_.getKey() == onlyKey)
+        case onlyKey :: Nil => cluster.getServices.asScala.find(_.getKey() == onlyKey)
         case firstKey :: subresourceKeys => {
-          cluster.getServices().find(_.getKey() == firstKey) match {
+          cluster.getServices.asScala.find(_.getKey() == firstKey) match {
             case Some(rootService) => {
               val servicesAlongPath = findSubresourcesAlongPath(rootService, subresourceKeys)
               servicesAlongPath.lastOption
@@ -127,7 +130,7 @@ class Snapshot(
         }
         case currentPathKey :: remainingPathKeys => currentService.allSubresources match {
           case Some(subresources) => {
-            subresources.find(_.getName() == currentPathKey) match {
+            subresources.asScala.find(_.getName() == currentPathKey) match {
               case Some(subresourceForCurrentKey) => {
                 val subresourceService = createServiceForSubresource(currentPathKey, subresourceForCurrentKey, currentService, rootService)
                 currentService :: find(subresourceService, currentPathKey :: visitedPathKeys, remainingPathKeys)
@@ -146,117 +149,20 @@ class Snapshot(
   private def createServiceForSubresource(key: String, schema: ResourceSchema, parent: Service, rootService: Service) = {
     val currentService = new Service() // key, path, clusters, resourceSchema, models
     currentService.setKey(key)
-    currentService.setPath(schema.getPath())
+    currentService.setPath(schema.getPath)
     currentService.setResourceSchema(schema)
-    currentService.setClusters(rootService.getClusters())
-    currentService.setModels(rootService.getModels())
+    currentService.setClusters(rootService.getClusters)
+    currentService.setModels(rootService.getModels)
     currentService.setParent(parent)
     currentService
   }
 
+  lazy val dashboardStats = DashboardStats.buildDashboardStats(this)
+
   def allClusters : List[Cluster] = {
-    clusters.values.toList.sortWith(_.getName().toLowerCase < _.getName().toLowerCase)
-  }
-
-  def allResourceSchemas : Iterable[ResourceSchema] = {
-    services.values map { service =>
-      service.getResourceSchema
-    }
-  }
-
-  def allMethods = allResourceSchemas map { schema =>
-    schema.methods
-  }
-
-  def searchTermEntry(name: String, term: String) = DashboardStat(name, Some(term), searchIndex.getCountForTerm(term))
-
-  lazy val dashboardStats = buildDashboardStats()
-  private def buildDashboardStats() = {
-    val resourceCounts = List(
-      searchTermEntry("collections", "isCollection:true AND NOT hasComplexKey:true"),
-      searchTermEntry("complex keys", "isCollection:true AND hasComplexKey:true"),
-      searchTermEntry("associations", "isAssociation:true"),
-      searchTermEntry("action sets", "isActionSet:true"),
-      searchTermEntry("simple", "isSimple:true")
-    )
-
-    // total methods + breakdown (methods, finders, actions)
-    val methods = List("get", "batch_get", "update", "batch_update",
-      "partial_update", "batch_partial_update",
-      "delete", "batch_delete", "create", "batch_create")
-
-    val methodCounts = methods map { m =>
-      searchTermEntry(m, "method:" + m)
-    }
-
-    val primaryServices = services.values.filter(_.isPrimaryColoVariant)
-
-    val operationCounts = List(
-      DashboardStat("method", Some("(" + methods.map("method:" + _).mkString(" OR ") + ")"), primaryServices.map(s => if (s.hasResourceSchema) s.getResourceSchema.methods.size() else 0).sum),
-      DashboardStat("finder", Some("hasFinder:true"), primaryServices.map(s => if (s.hasResourceSchema) s.getResourceSchema.finders.size() else 0).sum),
-      DashboardStat("action", Some("hasAction:true"), primaryServices.map(s => if (s.hasResourceSchema) s.getResourceSchema.actions.size() else 0).sum)
-    )
-
-    val actionCounts = List(
-      searchTermEntry("'get'", "action:\"get*\""),
-      searchTermEntry("'create'", "action:\"create*\""),
-      searchTermEntry("'update'", "action:\"update*\""),
-      searchTermEntry("'delete'", "action:\"delete*\""),
-      searchTermEntry("'find'", "action:\"find*\""),
-      searchTermEntry("'list'", "action:\"list*\"")
-    )
-
-    val batchOnlyCounts = List(
-      searchTermEntry("get", "method:batch_get AND NOT method:get"),
-      searchTermEntry("update", "method:batch_update AND NOT method:update"),
-      searchTermEntry("create", "method:batch_create AND NOT method:create"),
-      searchTermEntry("delete", "method:batch_delete AND NOT method:delete")
-    )
-
-    val servicesBucketedByCreatedAt = primaryServices.groupBy(s =>
-      new DateTime(s.getCreatedAt).toLocalDate.toString("MMM y")
-    )
-
-    val serviceCountBucketedByCreatedAt = servicesBucketedByCreatedAt.mapValues(_.size)
-
-    val inception = new YearMonth(2012, 10)
-    val currentYearMonth = new YearMonth(System.currentTimeMillis())
-    val timeBuckets = for {
-      year <- 2012 to 2014
-      month <- 1 to 12
-      date = new YearMonth(year, month)
-      if(!date.isBefore(inception) && !date.isAfter(currentYearMonth))
-      label = date.toString("MMM y")
-    } yield  (label, serviceCountBucketedByCreatedAt.getOrElse(label, 0))
-    val migrationCounts = timeBuckets.map{ case(label, count) =>
-      DashboardStat(label, None, count)
-    }
-
-    val currentDateTime = new DateTime(System.currentTimeMillis())
-    val startOfRange = currentDateTime.minusDays(31)
-    val newResources = search(new PagingContext(0, 100), "createdDate:[" + startOfRange.toString("yMMdd") + " TO " + currentDateTime.toString("yMMdd") + "] AND isColoVariant:false").getElements
-
-    new DashboardStats(
-      newResources.toList.sortBy(_.getCreatedAt).reverse,
-      migrationCounts.toList,
-      resourceCounts,
-      methodCounts,
-      actionCounts,
-      operationCounts,
-      batchOnlyCounts)
-
-    // total errors + breakdown (options, not running)
-    // total models + breakdown (record, typeref, enum, ...)
+    clusters.values.toList.sortWith(_.getName.toLowerCase < _.getName.toLowerCase)
   }
 }
 
-case class DashboardStat(name: String, search: Option[String], count: Int)
-case class DashboardStats(
-  val newResources: List[Service],
-  val migrationCounts: List[DashboardStat],
-  val resourceCounts: List[DashboardStat],
-  val methodCounts: List[DashboardStat],
-  val actionCounts: List[DashboardStat],
-  val operationCounts: List[DashboardStat],
-  val batchOnlyCounts: List[DashboardStat]
-)
+
+

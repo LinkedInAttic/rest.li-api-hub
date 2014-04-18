@@ -14,7 +14,7 @@
    limitations under the License.
 */
 
-package controllers
+package com.linkedin.restsearch.utils
 
 import com.fasterxml.jackson.core.{Version, JsonGenerator}
 import com.fasterxml.jackson.databind.{SerializerProvider, JsonSerializer, JsonNode, ObjectMapper}
@@ -24,7 +24,7 @@ import com.linkedin.data.codec.JacksonDataCodec
 import com.linkedin.data.template.{RecordTemplate, JacksonDataTemplateCodec, DataTemplate}
 import play.api.libs.json.{Json, JsValue}
 import play.libs.F
-import scala.collection.JavaConversions
+import scala.collection.JavaConverters._
 import play.api.Play
 import com.fasterxml.jackson.databind.module.SimpleModule
 import java.util.concurrent.atomic.{AtomicLong, AtomicInteger}
@@ -76,7 +76,7 @@ object JsonUtil {
    * @return
    */
   def toJavaMap(map: Map[String, Seq[String]]): java.util.Map[String, Array[String]] = {
-    JavaConversions.mapAsJavaMap(map.map(e => e._1 -> e._2.toArray))
+    map.mapValues(_.toArray).asJava
   }
 
   /**
@@ -86,7 +86,7 @@ object JsonUtil {
    * @return
    */
   def toScalaMap(map: java.util.Map[String, Array[String]]): Map[String, Seq[String]] = {
-    JavaConversions.mapAsScalaMap(map).toMap.map(entry => entry._1 -> entry._2.toSeq)
+    map.asScala.mapValues(_.toSeq).toMap
   }
 
   /**

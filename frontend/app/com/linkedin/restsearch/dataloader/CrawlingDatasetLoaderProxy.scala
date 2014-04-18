@@ -20,7 +20,7 @@ import com.linkedin.data.template.StringMap
 import com.linkedin.restsearch.{Dataset,Service}
 import com.linkedin.restsearch.fetcher.{SuccessfulScrape, FailedScrape, IdlFetcher}
 import scala.collection.mutable
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import play.api.Logger
 import com.linkedin.restsearch.template.utils.Conversions._
 
@@ -41,7 +41,7 @@ class CrawlingDatasetLoaderProxy(underlying: DatasetLoader, crawler: IdlFetcher)
       dataset.setServiceErrors(new StringMap())
     }
 
-    crawl(dataset.servicesMap, mapAsScalaMap(dataset.getServiceErrors))
+    crawl(dataset.servicesMap, dataset.getServiceErrors.asScala)
     dataset
   }
 
@@ -53,7 +53,7 @@ class CrawlingDatasetLoaderProxy(underlying: DatasetLoader, crawler: IdlFetcher)
         case scrape: SuccessfulScrape => {
           service.setResourceSchema(scrape.resourceSchema)
           val dataSchemas = scrape.dataSchemas.mapValues(_.toString)
-          service.setModels(new StringMap(mapAsJavaMap(dataSchemas)))
+          service.setModels(new StringMap(dataSchemas.asJava))
         }
         case failure: FailedScrape => {
           if(failure.ex.getMessage == null) {

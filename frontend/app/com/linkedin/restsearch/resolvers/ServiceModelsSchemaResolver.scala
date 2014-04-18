@@ -14,13 +14,13 @@
    limitations under the License.
 */
 
-package com.linkedin.restsearch.snapshot
+package com.linkedin.restsearch.resolvers
 
 import com.linkedin.restsearch.Service
 import com.linkedin.data.schema.resolver.DefaultDataSchemaResolver
 import com.linkedin.data.schema._
 import com.linkedin.data.template.DataTemplateUtil
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.Some
 
 /**
@@ -43,7 +43,7 @@ class ServiceModelsSchemaResolver(service: Service) extends DefaultDataSchemaRes
     }
     if (option.isDefined) option
     else {
-      val matchingModels = service.getModels.values() flatMap { model =>
+      val matchingModels = service.getModels.values().asScala flatMap { model =>
         findModelByName(DataTemplateUtil.parseSchema(model), fqn)
       }
       matchingModels.headOption
@@ -65,7 +65,7 @@ class ServiceModelsSchemaResolver(service: Service) extends DefaultDataSchemaRes
           } else {
             named match {
               case record: RecordDataSchema => {
-                record.getFields.flatMap { field =>
+                record.getFields.asScala.flatMap { field =>
                   findModelByName(visited + node, field.getType, fqn)
                 }.headOption
               }
@@ -80,7 +80,7 @@ class ServiceModelsSchemaResolver(service: Service) extends DefaultDataSchemaRes
           findModelByName(visited + node, map.getValues, fqn)
         }
         case union: UnionDataSchema => {
-          union.getTypes.flatMap { schema =>
+          union.getTypes.asScala.flatMap { schema =>
             findModelByName(visited + node, schema, fqn)
           }.headOption
         }
