@@ -1,4 +1,5 @@
 @(clusters: List[com.linkedin.restsearch.Cluster], metadata: com.linkedin.data.DataMap)
+@import play.Play
 
 @import com.linkedin.restsearch.template.utils.Conversions._
 
@@ -10,11 +11,19 @@
 
     @searchbox("")
 
-    <br><br>
+    <br>
 
-    @*<div class="alert alert-info">
-      Post any news here.
-    </div>*@
+    @defining(Play.application().configuration().getStringList("announcements")) { announcements =>
+      @if(!announcements.isEmpty) {
+        <div class="alert alert-info">
+          <ul>
+          @announcements.map { announcement =>
+            <li>@announcement</li>
+          }
+          </ul>
+        </div>
+      }
+    }
 
   </div>
 </div>
