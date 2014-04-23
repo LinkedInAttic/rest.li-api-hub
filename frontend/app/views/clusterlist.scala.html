@@ -14,11 +14,11 @@
     <br>
 
     @defining(Play.application().configuration().getStringList("announcements")) { announcements =>
-      @if(!announcements.isEmpty) {
+      @if(announcements.nonEmpty) {
         <div class="alert alert-info">
           <ul>
           @announcements.map { announcement =>
-            <li>@announcement</li>
+            <li>@Html(announcement)</li>
           }
           </ul>
         </div>
