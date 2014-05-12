@@ -19,9 +19,11 @@ package com.linkedin.restsearch.template.utils
 import com.linkedin.restli.restspec._
 import com.linkedin.restsearch.{Dataset, ClusterSource, Cluster, Service}
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 import com.linkedin.restsearch.template.utils.Conversions._
 import com.linkedin.d2.D2Uri
-import com.linkedin.data.schema.DataSchemaResolver
+import com.linkedin.data.schema.{DataSchemaResolver, DataSchema, NamedDataSchema, DataSchemaTraverse}
+import com.linkedin.data.schema.DataSchemaTraverse.Callback
 import org.json.JSONObject
 import com.linkedin.restli.docgen.examplegen.ExampleRequestResponseGenerator
 import com.linkedin.r2.message.rest.{RestResponse, RestRequest}
@@ -82,7 +84,7 @@ class RichService(service: Service) extends ColoVariantAware {
 
   lazy val models = {
     val resolver = new ServiceModelsSchemaResolver(service)
-    service.getModels.asScala.map { case (modelName, modelJson) =>
+    val rootModels = service.getModels.asScala.map { case (modelName, modelJson) =>
       try {
         modelName -> resolver.findModel(service, modelName)
       } catch {
@@ -90,6 +92,26 @@ class RichService(service: Service) extends ColoVariantAware {
       }
     }.collect {
       case (k, Some(v)) => k -> v
+    }
+
+    // if the data models are the results of an OPTIONS request,  the root level models list may not contain all
+    // named data schemas.  So we must traverse down, finding all additional schemas.
+    // Using the existing DataSchemaTraverse class from pegasus, even though it requires using a mutable map.
+    val traverser = new DataSchemaTraverse()
+    val callback = new TraverserCallback(new mutable.HashMap[String, DataSchema])
+    rootModels.values.foreach { schema =>
+      traverser.traverse(schema, callback)
+    }
+
+    rootModels ++ callback.accumulator
+  }
+
+  private class TraverserCallback(val accumulator: mutable.Map[String, DataSchema]) extends Callback {
+    def callback(path: java.util.List[String], schema: DataSchema) {
+      schema match {
+        case named: NamedDataSchema => accumulator += (named.getFullName -> named)
+        case _ => ()
+      }
     }
   }
 
