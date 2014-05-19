@@ -11,7 +11,7 @@ import scala.xml.transform.RewriteRule
 
 object ApplicationBuild extends Build with restli.All {
 
-  val pegasusVersion = "1.15.7"
+  val pegasusVersion = "1.15.18"
 
   val baseSettings =  super.settings ++ org.sbtidea.SbtIdeaPlugin.settings ++ Seq(
     organization := "com.linkedin.pegasus",

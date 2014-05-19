@@ -27,6 +27,9 @@ import scala.concurrent.duration.Duration
 import java.util.concurrent.TimeUnit
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
+import com.linkedin.restli.internal.client.OptionsResponseDecoder
+import com.linkedin.data.ByteString
+import com.linkedin.r2.message.rest.RestResponseBuilder
 
 /**
  * Crawls docgen endpoints on running rest.li servers, collecting the idl and data schemas for the resources they host.
@@ -40,9 +43,8 @@ class UrlIdlFetcher extends IdlFetcher {
     val future = WS.url(url).options().map { response =>
       response.status match {
         case 200 => {
-          val in = IOUtils.toInputStream(response.body)
-          val dataMap = DataMapUtils.readMap(in)
-          val optionsResponse = new OptionsResponseDecoder().wrapResponse(dataMap)
+          val restResponse = new RestResponseBuilder().setEntity(ByteString.copyString(response.body, "UTF-8")).setStatus(200).build()
+          val optionsResponse = new OptionsResponseDecoder().decodeResponse(restResponse).getEntity
           Logger.info("Fetched " + url)
           SuccessfulScrape(
             optionsResponse.getResourceSchemas.values().asScala.head,
