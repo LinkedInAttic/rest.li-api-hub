@@ -206,9 +206,10 @@ object Application extends Controller with ConsoleUtils {
           if(exampleOpt.isDefined) {
             val example = exampleOpt.get
             val request = example.getRequest
+
             Future(Ok(views.html.console(
               request.method,
-              request.uri.toString,
+              request.buildD2Uri(service),
               request.headers.asScala.map{ case(k, v) => k + ":" + v }.mkString("\n"),
               request.input,
               None,//Some(method.exampleResponse(typeRenderer).buildHttpResponse())

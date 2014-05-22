@@ -82,7 +82,7 @@ object DashboardStats {
     val inception = new YearMonth(2012, 10)
     val currentYearMonth = new YearMonth(System.currentTimeMillis())
     val timeBuckets = for {
-      year <- 2012 to 2014
+      year <- inception.year().get() to currentYearMonth.year().get()
       month <- 1 to 12
       date = new YearMonth(year, month)
       if(!date.isBefore(inception) && !date.isAfter(currentYearMonth))

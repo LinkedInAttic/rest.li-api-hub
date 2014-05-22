@@ -160,14 +160,14 @@
 }
 
 @httpRequest(request: RestRequest) = {
-<pre>@request.getMethod @request.exampleUri
+<pre>@request.getMethod @request.uri
 @request.headers.asScala.map{ case(key, value)=>@key: @value}.mkString("\n")
 @if(request.input.isDefined){
 @request.input.get}</pre>
 }
 
 @curlRequest(request: RestRequest) = {
-<pre>@Play.application().configuration().getString("curlCommand") "d2:/@request.exampleUri"
+<pre>@Play.application().configuration().getString("curlCommand") "d2:/@request.buildD2Uri(service)"
 -X @request.getMethod
 @request.curlExampleHeaders.map{ case(key, value)=>-H @key: @value}.mkString("\n")
 @if(request.input.isDefined){--data '@request.input.get'}</pre>

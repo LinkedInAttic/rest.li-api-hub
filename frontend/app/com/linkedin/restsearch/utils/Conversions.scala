@@ -116,6 +116,7 @@ class RichService(service: Service) extends ColoVariantAware {
   }
 
 
+
   /**
    * Count of resources under this resource, including itself and it's subresources
    */
@@ -489,6 +490,20 @@ class RichDataset(dataset: Dataset) {
 
 class RichRestRequest(request: RestRequest) {
   lazy val uri = request.getURI
+  def buildD2Uri(service: Service): String = {
+    if(service.hasD2Service) {
+      val d2Service = service.getD2Service
+      val d2ServerNameAsPath = s"/${d2Service.getName}"
+      if(d2Service.getPath != d2ServerNameAsPath) {
+        uri.toString.replaceFirst(d2Service.getPath, d2ServerNameAsPath)
+      } else {
+        uri.toString
+      }
+    } else {
+      uri.toString
+    }
+  }
+
   def method = request.getMethod
   def headers = request.getHeaders
 

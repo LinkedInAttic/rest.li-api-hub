@@ -96,7 +96,7 @@ class LuceneSearchIndex extends SearchIndex {
     val overrideTerms = List("isColoVariant", "coloVariant");
     try {
       val terms = new java.util.HashSet[Term]()
-      queryIn.extractTerms(terms)
+      queryIn.rewrite(reader).extractTerms(terms) // lucene queries must be rewritten before terms may be safely extracted
       if(terms.asScala.exists(term => overrideTerms.contains(term.field()))) { // run the exact query provided
         queryIn
       } else { // rewrite query to exclude colo variants
