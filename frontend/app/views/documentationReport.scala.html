@@ -1,0 +1,40 @@
+@(datasetReport: com.linkedin.restsearch.qualityreport.DatasetReport, metadata: com.linkedin.data.DataMap)
+
+@percent(f: Float) = {@("%1.0f".format(f*100))%}
+
+@main("doc report") {
+  <div class="row">
+    <div class="col-lg-9">
+      @freshness(metadata)
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-9">
+      System wide resource documentation coverage: @datasetReport.documentationRatio
+    </div>
+  </div>
+
+  @datasetReport.clusterReports.sortBy(_.documentationRatio).map { clusterReport =>
+  <div class="row">
+    <div class="col-lg-9">
+        <a href="@routes.Application.cluster(clusterReport.name)">@clusterReport.name Cluster</a> (@percent(clusterReport.documentationRatio) coverage)
+        <ul>
+            @clusterReport.resourceReports.sortBy(_.documentationRatio).map { resourceReport =>
+              <li>
+                  <a href="@routes.Application.service(clusterReport.name, resourceReport.key)">@resourceReport.key Resource</a> (@percent(resourceReport.documentationRatio) coverage)
+                  <span class="text-muted">@resourceReport.doc.map{ docString => - "@docString" }.getOrElse("- No resource documentation")</span>
+                  <ul>
+                  @resourceReport.methodReports.sortBy(_.documentationQuality).map { methodReport =>
+                    <li>
+                        @methodReport.name
+                        <span class="text-muted">@methodReport.doc.map{ docString => - "@docString" }.getOrElse("- No method documentation")</span>
+                    </li>
+                  }
+                  </ul>
+              </li>
+            }
+        </ul>
+    </div>
+  </div>
+  }
+}

@@ -78,7 +78,11 @@ trait ColoVariantAware {
   }
 }
 
-class RichService(service: Service) extends ColoVariantAware {
+class RichService(service: Service) extends ColoVariantAware with Documented {
+
+  def hasDocumentation: Boolean = service.getResourceSchema.hasDoc
+  def documentation: String = service.getResourceSchema.getDoc
+
   override def coloVariantIdentifier = service.getKey
   def isPrimaryColoVariant = /*(service.hasDefaultService && service.isDefaultService) ||*/ !isColoVariant
 

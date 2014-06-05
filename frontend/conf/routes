@@ -24,4 +24,5 @@ POST    /upload                     controllers.Application.upload
 
 # for fun
 GET     /dashboard                  controllers.Application.dashboard
+GET     /docreport                  controllers.Application.documentationReport
 

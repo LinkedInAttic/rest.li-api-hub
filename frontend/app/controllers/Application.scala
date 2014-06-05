@@ -50,6 +50,7 @@ import play.api.mvc.SimpleResult
 import com.linkedin.restsearch.utils.TypeRenderer
 import com.linkedin.restsearch.security.CsrfProvider
 import com.linkedin.restsearch.resolvers.ServiceModelsSchemaResolver
+import com.linkedin.restsearch.qualityreport.DocumentationReport
 
 object Application extends Controller with ConsoleUtils {
   val resultsPerPage = 20
@@ -77,6 +78,10 @@ object Application extends Controller with ConsoleUtils {
 
   def dashboard = Action { request =>
     Ok(views.html.dashboard(snapshot.allClusters, snapshot.metadata, snapshot.dashboardStats))
+  }
+
+  def documentationReport = Action { request =>
+    Ok(views.html.documentationReport(DocumentationReport.buildDatasetReport(snapshot.allClusters), snapshot.metadata))
   }
 
   def uploadPrompt = Action { implicit request =>
