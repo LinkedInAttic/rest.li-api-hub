@@ -1,4 +1,8 @@
-@(cluster: com.linkedin.restsearch.Cluster, service: com.linkedin.restsearch.Service, entitySchema: Option[com.linkedin.data.schema.DataSchema], typeRenderer: com.linkedin.restsearch.utils.TypeRenderer, exampleGenerator : Option[com.linkedin.restli.docgen.examplegen.ExampleRequestResponseGenerator])
+@(cluster: com.linkedin.restsearch.Cluster, service: com.linkedin.restsearch.Service, entitySchema: Option[com.linkedin.data.schema.DataSchema], typeRenderer: com.linkedin.restsearch.utils.TypeRenderer, exampleGenerator : Option[com.linkedin.restli.docgen.examplegen.ExampleRequestResponseGenerator], serviceProvidedRequestResponse: scala.collection.Map[String, com.linkedin.restsearch.ServiceProvidedRequestResponse])
+@import com.linkedin.restsearch.RequestResponse
+
+@import com.linkedin.restsearch.ServiceProvidedRequestResponse
+
 @import play.Play
 @import com.linkedin.restli.server.ResourceLevel
 
@@ -98,7 +102,7 @@
   </ul>
 }
 
-@examples(operationName: String, example: ExampleRequestResponse) = {
+@examples(operationName: String, example: ExampleRequestResponse, providedReqRes: Option[ServiceProvidedRequestResponse]) = {
   <div class="btn-group pull-right">
     <button class="btn btn-link btn-sm dropdown-toggle"
             style="margin-top:0px; padding-top:0px;"
@@ -120,10 +124,26 @@
           <h3>@operationName HTTP Example</h3>
         </div>
         <div class="modal-body">
-          <h5>Request</h5>
-            @httpRequest(example.getRequest)
-          <h5>Response<h5>
-            @response(example.getResponse)
+          @providedReqRes match {
+            case Some(reqRes) => {
+              @defining(reqRes.getMethodRequestResponse) { methodExampleMap =>
+                @if(methodExampleMap.get(operationName) != null) {
+                  @defining(methodExampleMap.get(operationName)) { methodExample =>
+                    @if(methodExample.hasUrl && (methodExample.hasResponseHeaders || methodExample.hasResponseBody)) {
+                      @renderProvidedExample(reqRes, example, operationName)
+                    } else {
+                      @renderGeneratedExample(example)
+                    }
+                  }
+                } else {
+                  @renderGeneratedExample(example)
+                }
+              }
+            }
+            case None => {
+              @renderGeneratedExample(example)
+            }
+          }
         </div>
         <div class="modal-footer">
           <a class="btn" href="@routes.Application.send(cluster.getName(), service.keysToResource.mkString("."), operationName)" >Try it!</a>
@@ -141,10 +161,26 @@
           <h3>@operationName curl Example</h3>
         </div>
         <div class="modal-body">
-          <h5>Request<h5>
-            @curlRequest(example.getRequest)
-          <h5>Response<h5>
-            @response(example.getResponse)
+          @providedReqRes match {
+            case Some(reqRes) => {
+             @defining(reqRes.getMethodRequestResponse) { methodExampleMap =>
+               @if(methodExampleMap.get(operationName) != null) {
+                 @defining(methodExampleMap.get(operationName)) { methodExample =>
+                   @if(methodExample.hasUrl && (methodExample.hasResponseHeaders || methodExample.hasResponseBody)) {
+                     @renderProvidedCurlExample(methodExample, example)
+                   } else {
+                     @renderGeneratedCurlExample(example)
+                   }
+                 }
+               } else {
+                 @renderGeneratedCurlExample(example)
+               }
+             }
+           }
+          case None => {
+            @renderGeneratedCurlExample(example)
+          }
+        }
         </div>
         <div class="modal-footer">
           <a class="btn" href="@routes.Application.send(cluster.getName(), service.keysToResource.mkString("."), operationName)" >Try it!</a>
@@ -153,6 +189,34 @@
       </div>
     </div>
   </div>
+}
+
+@renderProvidedExample(reqRes: ServiceProvidedRequestResponse, example: ExampleRequestResponse, operationName: String) = {
+  <h5>Request</h5>
+    <pre>@reqRes.buildRequest(example.getRequest.getMethod, operationName)</pre>
+  <h5>Response</h5>
+    <pre>@reqRes.buildResponse(operationName)</pre>
+}
+
+@renderGeneratedExample(example: ExampleRequestResponse) = {
+  <h5>Request</h5>
+    @httpRequest(example.getRequest)
+  <h5>Response</h5>
+    @response(example.getResponse)
+}
+
+@renderProvidedCurlExample(methodExample: RequestResponse, example: ExampleRequestResponse) = {
+  <h5>Request</h5>
+    @buildCurlRequest(methodExample.getUrl, example.getRequest.getMethod, methodExample.getResponseHeaders.asScala, methodExample.getResponseBody)
+  <h5>Response</h5>
+    <pre>@methodExample.getResponseBody</pre>
+}
+
+@renderGeneratedCurlExample(example: ExampleRequestResponse) = {
+  <h5>Request</h5>
+    @curlRequest(example.getRequest)
+  <h5>Response</h5>
+    @response(example.getResponse)
 }
 
 @template(example: ExampleRequestResponse) = {
@@ -171,6 +235,13 @@
 -X @request.getMethod
 @request.curlExampleHeaders.map{ case(key, value)=>-H @key: @value}.mkString("\n")
 @if(request.input.isDefined){--data '@request.input.get'}</pre>
+}
+
+@buildCurlRequest(url: String, method: String, headers: collection.Map[String, String], body: String) = {
+<pre>@Play.application().configuration().getString("curlCommand") "d2:/@url"
+-X @method
+@headers.map{ case(key, value)=>-H @key: @value}.mkString("\n")
+@if(!body.isEmpty){--data '@body'}</pre>
 }
 
 @response(response: RestResponse) = {
@@ -207,22 +278,22 @@
   }
 }
 
-@resourceMethodDetails(schema: ResourceSchema, identifierType: String) = {
+@resourceMethodDetails(schema: ResourceSchema, identifierType: String, providedReqRes: Option[ServiceProvidedRequestResponse]) = {
 
   @if(schema.methods.nonEmpty) {
-    @methods(schema.methods, identifierType)
+    @methods(schema.methods, identifierType, providedReqRes)
   }
 
   @if(schema.finders.nonEmpty) {
-    @finders(schema.finders)
+    @finders(schema.finders, providedReqRes)
   }
 
   @if(schema.actions.nonEmpty) {
-    @actions(schema.actions)
+    @actions(schema.actions, None, providedReqRes)
   }
 
   @if(schema.entityActions.nonEmpty) {
-    @actions(schema.entityActions, Some(schema.entityPath))
+    @actions(schema.entityActions, Some(schema.entityPath), providedReqRes)
   }
 }
 
@@ -253,7 +324,26 @@
   </ul>
 }
 
-@methods(methods: RestMethodSchemaArray, key: String) = {
+@renderExampleUrl(operationName: String, exampleOpt: Option[ExampleRequestResponse], providedReqRes: Option[ServiceProvidedRequestResponse]) = {
+  @providedReqRes match {
+    case Some(reqRes) => {
+      @if(reqRes.getMethodRequestResponse.get(operationName) != null) {
+        @if(reqRes.getMethodRequestResponse.get(operationName).hasUrl) {
+          @exampleOpt.map{example=>@example.getRequest.getMethod} @reqRes.getMethodRequestResponse.get(operationName).getUrl
+        } else {
+          @exampleOpt.map{example=>@template(example)}
+        }
+      } else {
+        @exampleOpt.map{example=>@template(example)}
+      }
+    }
+    case None => {
+      @exampleOpt.map{example=>@template(example)}
+    }
+  }
+}
+
+@methods(methods: RestMethodSchemaArray, key: String, providedReqRes: Option[ServiceProvidedRequestResponse]) = {
   @if(methods != null && methods.size() > 0) {
     <section id="methods">
       @*<div class="page-header">
@@ -265,11 +355,11 @@
           <div class="panel panel-default">
             <div class="panel-heading">
               @if(cluster.getSource == ClusterSource.D2 && exampleOpt.isDefined) {
-                @examples(method.getMethod(), exampleOpt.get)
+                @examples(method.getMethod(), exampleOpt.get, providedReqRes)
               }
               <h3 class="panel-title">
                 <a id="@method.getMethod()"></a><span @if(method.isDeprecated){class="deprecated"}>@method.getMethod()</span>
-                <code class="op-template">@exampleOpt.map{example=>@template(example)}</code>
+                <code class="op-template">@renderExampleUrl(method.getMethod, exampleOpt, providedReqRes)</code>
               </h3>
             </div>
             <div class="panel-body">
@@ -299,7 +389,7 @@
   </ul>
 }
 
-@finders(finders: FinderSchemaArray) = {
+@finders(finders: FinderSchemaArray, providedReqRes: Option[ServiceProvidedRequestResponse]) = {
   @if(finders != null && finders.size() > 0) {
     <section id="finders">
       @finders.toList.zipWithIndex.map { case(finder, index) =>
@@ -307,12 +397,12 @@
           <div class="panel panel-default">
             <div class="panel-heading">
               @if(cluster.getSource == ClusterSource.D2 && requestOpt.isDefined) {
-                @examples(finder.getName(), requestOpt.get)
+                @examples(finder.getName(), requestOpt.get, providedReqRes)
               }
               <h3 class="panel-title">
 
                 <a id="@finder.getName()"></a><span @if(finder.isDeprecated){class="deprecated"}>"@finder.getName()" Finder</span>
-                <code class="op-template">@requestOpt.map{request=>@template(request)}</code>
+                <code class="op-template">@renderExampleUrl(finder.getName, requestOpt, providedReqRes)</code>
               </h3>
             </div>
             <div class="panel-body">
@@ -355,7 +445,7 @@
   </ul>
 }
 
-@actions(actions: ActionSchemaArray, entityPath: Option[String] = None) = {
+@actions(actions: ActionSchemaArray, entityPath: Option[String] = None, providedReqRes: Option[ServiceProvidedRequestResponse]) = {
   @if(actions != null && actions.size() > 0) {
     <section id="actions">
       @actions.toList.zipWithIndex.map { case(action, index) =>
@@ -363,11 +453,11 @@
           <div class="panel panel-default">
             <div class="panel-heading">
               @if(cluster.getSource == ClusterSource.D2 && requestOpt.isDefined) {
-                @examples(action.getName(), requestOpt.get)
+                @examples(action.getName(), requestOpt.get, providedReqRes)
               }
               <h3 class="panel-title">
                 <a id="@action.getName()"></a><span @if(action.isDeprecated){class="deprecated"}>"@action.getName()" @if(entityPath.isDefined){Entity }Action</span>
-                <code class="op-template">@requestOpt.map{request=>@template(request)}</code>
+                <code class="op-template">@renderExampleUrl(action.getName, requestOpt, providedReqRes)</code>
               </h3>
             </div>
             <div class="panel-body">
@@ -594,29 +684,31 @@
 
   @if(service.hasResourceSchema()) {
     @defining(service.getResourceSchema()) { schema =>
-      <ul class="list-unstyled">
-        <li>
-
-          @if(entitySchema.isDefined) {
-            @dataSchema(entitySchema.get)
-          }
-
-          @if(schema.hasCollection()) {
-            @defining(schema.getCollection().getIdentifier().getType()) { identifier =>
-              @resourceMethodDetails(schema, identifier)
+      @defining(serviceProvidedRequestResponse.get("/" + service.keysToResource.mkString("/"))) { providedReqRes =>
+        <ul class="list-unstyled">
+          <li>
+            @if(entitySchema.isDefined) {
+                @dataSchema(entitySchema.get)
             }
-          }
-          @if(schema.hasAssociation()) {
-            @resourceMethodDetails(schema, "ComplexKey")
-          }
-          @if(schema.hasSimple()) {
-            @resourceMethodDetails(schema, "Keyless")
-          }
-          @if(schema.hasActionsSet()) {
-            @resourceMethodDetails(schema, "Keyless")
-          }
-        </li>
-      </ul>
+
+            @if(schema.hasCollection()) {
+              @defining(schema.getCollection().getIdentifier().getType()) { identifier =>
+                  @resourceMethodDetails(schema, identifier, providedReqRes)
+              }
+            }
+
+            @if(schema.hasAssociation()) {
+              @resourceMethodDetails(schema, "ComplexKey", providedReqRes)
+            }
+            @if(schema.hasSimple()) {
+              @resourceMethodDetails(schema, "Keyless", providedReqRes)
+            }
+            @if(schema.hasActionsSet()) {
+              @resourceMethodDetails(schema, "Keyless", providedReqRes)
+            }
+          </li>
+        </ul>
+       }
       }
     }
   </div>

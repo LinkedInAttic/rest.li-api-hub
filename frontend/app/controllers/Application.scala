@@ -51,6 +51,7 @@ import com.linkedin.restsearch.utils.TypeRenderer
 import com.linkedin.restsearch.security.CsrfProvider
 import com.linkedin.restsearch.resolvers.ServiceModelsSchemaResolver
 import com.linkedin.restsearch.qualityreport.DocumentationReport
+import com.linkedin.restsearch.serviceprovidedexamples.ServiceProvidedRequestResponseFileLoader
 
 object Application extends Controller with ConsoleUtils {
   val resultsPerPage = 20
@@ -71,6 +72,9 @@ object Application extends Controller with ConsoleUtils {
   private lazy val csrfProvider = Class.forName(csrfProviderClass).newInstance().asInstanceOf[CsrfProvider]
 
   private lazy val d2Url = config.getString("d2url")
+
+  private lazy val serviceProvidedRequestResponseExamples =
+    new ServiceProvidedRequestResponseFileLoader(config.getString("serviceProvidedRequestResponseFilename").get).loadExamples
 
   def index = Action { request =>
     Ok(views.html.clusterlist(snapshot.allClusters, snapshot.metadata))
@@ -131,7 +135,7 @@ object Application extends Controller with ConsoleUtils {
           val service = serviceOpt.get
           val resolver = cluster.get.getResolver(service)
           val dataSchema = service.models.get(service.getResourceSchema.getSchema)
-          Ok(views.html.servicedetails(cluster.get, service, dataSchema, new TypeRenderer(cluster.get, service, resolver), service.exampleRequestResponseGenerator(resolver)))
+          Ok(views.html.servicedetails(cluster.get, service, dataSchema, new TypeRenderer(cluster.get, service, resolver), service.exampleRequestResponseGenerator(resolver), serviceProvidedRequestResponseExamples))
         }
       }
     }
@@ -212,6 +216,21 @@ object Application extends Controller with ConsoleUtils {
             val example = exampleOpt.get
             val request = example.getRequest
 
+            if (serviceProvidedRequestResponseExamples.contains("/" + serviceKey)) {
+              val methodExamples = serviceProvidedRequestResponseExamples.get("/" + serviceKey).get.getMethodRequestResponse
+              if (methodExamples.containsKey(op)) {
+                return Future(Ok(views.html.console(
+                request.method,
+                methodExamples.get(op).getUrl.substring(1),
+                methodExamples.get(op).requestHeaders.map{ case(k, v) => k + ":" + v }.mkString("\n"),
+                Some(methodExamples.get(op).getRequestBody),
+                None,
+                snapshot.metadata,
+                csrfProvider
+                )))
+              }
+            }
+
             Future(Ok(views.html.console(
               request.method,
               request.buildD2Uri(service),
@@ -221,6 +240,7 @@ object Application extends Controller with ConsoleUtils {
               snapshot.metadata,
               csrfProvider
             )))
+
           } else {
             Future(NotFound("Operation not found: " + op))
           }
@@ -280,6 +300,7 @@ object Application extends Controller with ConsoleUtils {
   }
 
   def send(clusterName: String, serviceKey: String, op: String) = Action.async { implicit request =>
+    Future(Forbidden)
     loadCluster(clusterName)  flatMap { cluster =>
       if (!cluster.isDefined) Future(NotFound)
       else {

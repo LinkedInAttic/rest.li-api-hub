@@ -1,0 +1,16 @@
+{
+  "type": "record",
+  "name": "ServiceProvidedRequestResponseList",
+  "namespace": "com.linkedin.restsearch",
+  "fields":
+  [
+    {
+      "name": "serviceProvidedRequestResponseList",
+      "type":
+      {
+        "type": "array",
+        "items": "ServiceProvidedRequestResponse"
+      }
+    }
+  ]
+}

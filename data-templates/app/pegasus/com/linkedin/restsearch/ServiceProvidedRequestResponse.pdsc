@@ -1,0 +1,23 @@
+{
+  "type": "record",
+  "name": "ServiceProvidedRequestResponse",
+  "namespace": "com.linkedin.restsearch",
+  "doc": "Real request response examples for a Rest.li service provided by a service owner.",
+  "fields":
+  [
+    {
+      "name": "serviceIdentifier",
+      "doc": "Identifier for the service. For a root resource this is the same as /Service.getKey. For a sub-resource it is the path to the sub-resource ignoring parent keys. For example: if bar is a sub-resource of foo the identifier would be /foo/bar.",
+      "type": "string"
+    },
+    {
+      "name": "methodRequestResponse",
+      "type":
+      {
+        "type": "map",
+        "values": "RequestResponse"
+      },
+      "doc": "A request and response pair for a particular method. The key is the method name. The value is the request and corresponding response."
+    }
+  ]
+}

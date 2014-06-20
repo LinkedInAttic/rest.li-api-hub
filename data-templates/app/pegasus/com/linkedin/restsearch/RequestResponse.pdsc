@@ -1,0 +1,46 @@
+{
+  "type": "record",
+  "name": "RequestResponse",
+  "namespace": "com.linkedin.restsearch",
+  "doc": "Real request response examples for a Rest.li service provided by a service owner.",
+  "fields":
+  [
+    {
+      "name": "url",
+      "type": "string",
+      "doc": "URL for the request."
+    },
+    {
+      "name": "requestHeaders",
+      "type":
+      {
+        "type": "map",
+        "values": "string"
+      },
+      "default": {},
+      "doc": "Request headers."
+    },
+    {
+      "name": "requestBody",
+      "type": "string",
+      "default": "",
+      "doc": "Body for the request."
+    },
+    {
+      "name": "responseHeaders",
+      "type":
+      {
+        "type": "map",
+        "values": "string"
+      },
+      "default": {},
+      "doc": "Headers for the response."
+    },
+    {
+      "name": "responseBody",
+      "type": "string",
+      "default": "",
+      "doc": "Response body for this method."
+    }
+  ]
+}

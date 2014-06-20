@@ -17,7 +17,7 @@
 package com.linkedin.restsearch.template.utils
 
 import com.linkedin.restli.restspec._
-import com.linkedin.restsearch.{Dataset, ClusterSource, Cluster, Service}
+import com.linkedin.restsearch._
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 import com.linkedin.restsearch.template.utils.Conversions._
@@ -32,6 +32,8 @@ import java.lang.IllegalArgumentException
 import play.api.Play
 import play.api.Play.current
 import com.linkedin.restsearch.resolvers.{SnapshotSchemaResolver, ServiceModelsSchemaResolver}
+import scala.Some
+import com.linkedin.data.template.StringMap
 
 /**
  * Use implicit conversions to mix in additional utility methods to the data template classes.
@@ -48,6 +50,8 @@ object Conversions {
   implicit def toRichRestMethodSchema(schema: RestMethodSchema) = new RichRestMethodSchema(schema)
   implicit def toRichRestRequest(request: RestRequest) = new RichRestRequest(request)
   implicit def toRichRestResponse(response: RestResponse) = new RichRestResponse(response)
+  implicit def toRichServiceProvidedRequestResponse(reqRes: ServiceProvidedRequestResponse) = new RichServiceProvidedRequestResponse(reqRes)
+  implicit def toRichRequestResponse(requestResponse: RequestResponse) = new RichRequestResponse(requestResponse)
 }
 
 
@@ -561,5 +565,36 @@ class RichRestResponse(response: RestResponse) {
   def body = {
     if(response.getEntity == null || response.getEntity.length() == 0) None
     else Some(new JSONObject(new String(response.getEntity.copyBytes(), "UTF-8")).toString(2))
+  }
+}
+
+class RichServiceProvidedRequestResponse(serviceProvidedRequestResponse: ServiceProvidedRequestResponse) {
+  def serviceIdentifier = serviceProvidedRequestResponse.getServiceIdentifier
+
+  def buildRequest(httpMethod: String, methodName: String) = {
+    val reqRes = serviceProvidedRequestResponse.getMethodRequestResponse.get(methodName)
+    httpMethod + " " + reqRes.getUrl + "\n\n" + formatHeaders(reqRes.requestHeaders) + "\n\n" + reqRes.getRequestBody
+  }
+
+  def buildResponse(methodName: String) = {
+    val reqRes = serviceProvidedRequestResponse.getMethodRequestResponse.get(methodName)
+    formatHeaders(reqRes.responseHeaders) + "\n\n" + reqRes.getResponseBody
+  }
+
+  def formatHeaders(headers: collection.Map[String, String]): String = {
+    headers.map{case(k, v) => k + ":" + v }.mkString("\n")
+  }
+}
+
+class RichRequestResponse(requestResponse: RequestResponse) {
+  private val defaultRequestHeaders = Map("X-Restli-Protocol-Version" -> "1.0.0", "Accept" -> "application/json")
+  private val defaultResponseHeaders = Map("X-Restli-Protocol-Version" -> "1.0.0", "Content-Type" -> "application/json")
+
+  def requestHeaders: collection.Map[String, String] = {
+    return defaultRequestHeaders ++ requestResponse.getRequestHeaders.asScala
+  }
+
+  def responseHeaders: collection.Map[String, String] = {
+    return defaultResponseHeaders ++ requestResponse.getResponseHeaders.asScala
   }
 }
