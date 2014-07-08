@@ -207,7 +207,7 @@
 
 @renderProvidedCurlExample(methodExample: RequestResponse, example: ExampleRequestResponse) = {
   <h5>Request</h5>
-    @buildCurlRequest(methodExample.getUrl, example.getRequest.getMethod, methodExample.getResponseHeaders.asScala, methodExample.getResponseBody)
+    @buildCurlRequest(methodExample.getUrl, example.getRequest.getMethod, methodExample.getRequestHeaders.asScala, methodExample.getRequestBody)
   <h5>Response</h5>
     <pre>@methodExample.getResponseBody</pre>
 }
