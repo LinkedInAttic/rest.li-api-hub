@@ -59,6 +59,17 @@ trait ColoVariantAware {
   def coloVariantIdentifier: String
   def isPrimaryColoVariant: Boolean
 
+  def stripColoSuffix: String = {
+    if (isColoVariant) {
+      knownColoVariantSuffixes.foreach { colo =>
+        if (coloVariantIdentifier.endsWith(colo)) {
+          return coloVariantIdentifier.substring(0, coloVariantIdentifier.length - colo.length)
+        }
+      }
+    }
+    coloVariantIdentifier
+  }
+
   lazy val isColoVariant = {
     knownColoVariantSuffixes.exists(coloVariantIdentifier.endsWith)
   }

@@ -1,4 +1,9 @@
 @(clusters: List[com.linkedin.restsearch.Cluster], metadata: com.linkedin.data.DataMap)
+@import com.linkedin.restsearch.Cluster
+@import collection.immutable.SortedMap
+@import scala.collection.immutable.SortedMap
+@import com.linkedin.restsearch.utils.ClusterViewUtil
+@import com.linkedin.restsearch.utils.ClusterSortOrder
 @import play.Play
 
 @import com.linkedin.restsearch.template.utils.Conversions._
@@ -35,44 +40,52 @@
     @if(clusters.size == 1) {
       @clusterservices(clusters(0))
     } else {
-      @defining(clusters.filter(_.getName().size > 0).groupBy(_.getName().charAt(0).toUpper)) { groupedClusters =>
+      <!-- source: http://stackoverflow.com/a/14434208 and http://stackoverflow.com/a/10089609 -->
+      @defining(SortedMap(clusters.filter(_.getName().size > 0).groupBy(_.stripColoSuffix).toSeq:_*)(ClusterSortOrder)){ groupedClusters =>
         <div class="js-masonry" data-masonry-options='{ "itemSelector": ".masonry-item", "columnWidth": 350 }'>
-          @defining('A' to 'Z') { letters =>
-            @letters.map { letter =>
-              <span class="api-list" id="@letter"></span>
-                @groupedClusters.get(letter).map { clusters =>
-                  @clusters.map { cluster =>
-                    @if(cluster.services(primaryOnly=true).nonEmpty) {
-                      <div class="masonry-item thumbnail">
-                        <div class="caption">
-                          <h4>
-                            @defining(cluster.coloVariants(clusters)) { variants =>
-                              @if(variants.nonEmpty) {
-                                <a href="@routes.Application.cluster(cluster.getName())">@cluster.canonicalColoVariantIdentifier</a>
-                                <span class="text-muted">-
-                                  <ul class="comma-separated">
-                                    @variants.map { variant =>
+          @groupedClusters.map { case (clusterWithoutColo, clusters) =>
+            @if(ClusterViewUtil.shouldDisplay(clusters)) {
+              <div class="masonry-item thumbnail">
+                <div class="caption">
+                  @defining(ClusterViewUtil.getPrimaryColoVariant(clusters)) { primaryOption =>
+                    @primaryOption match {
+                      case Some(cluster) => {
+                        <h4>
+                          @defining(cluster.coloVariants(clusters)) { variants =>
+                            @if(variants.nonEmpty) {
+                              <a href="@routes.Application.cluster(cluster.getName())">@cluster.canonicalColoVariantIdentifier</a>
+                              <span class="text-muted">-
+                                <ul class="comma-separated">
+                                  @variants.map { variant =>
                                     <li><a class="text-muted" href="@routes.Application.cluster(variant.getName())">@variant.coloVariantSuffix</a></li>
-                                    }
-                                  </ul>
-                                </span>
-                              } else {
+                                  }
+                                </ul>
+                              </span>
+                            } else {
                                 <a href="@routes.Application.cluster(cluster.getName())">@cluster.getName()</a>
-                              }
                             }
-                          </h4>
-                          @clusterservices(cluster)
-                        </div>
-                      </div>
+                          }
+                        </h4>
+                      }
+                      case None => {
+                        ""
+                      }
                     }
                   }
-                }
-              }
+                  <ul class="list-unstyled">
+                    @clusters.map { cluster =>
+                      @if(cluster.services(primaryOnly=true).nonEmpty) {
+                        @clusterservices(cluster)
+                      }
+                    }
+                  </ul>
+                </div>
+              </div>
             }
+          }
         </div>
       }
     }
-
   </div>
 </div>
 
