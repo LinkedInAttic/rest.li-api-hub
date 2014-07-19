@@ -64,8 +64,10 @@
     </div>
   </div>
 
-  @chart("When Resources were added to D2...", dashboardStats.migrationCounts, true, "line-chart", width=500, height=300, showLegend=false)
-  @serviceList("Resources Added in the last month...", dashboardStats.newResources)
+  @if(dashboardStats.isUsingD2) {
+    @chart("When Resources were added to D2...", dashboardStats.migrationCounts, true, "line-chart", width=500, height=300, showLegend=false)
+    @serviceList("Resources Added in the last month...", dashboardStats.newResources)
+  }
   @chart("Resource Types", dashboardStats.resourceCounts, true, "bar-chart", width=500, height=300)
   @chart("Methods, Finders and Actions", dashboardStats.operationCounts, false, "doughnut-chart")
   @chart("Method Types", dashboardStats.methodCounts, true, "bar-chart", width=700, height=300)

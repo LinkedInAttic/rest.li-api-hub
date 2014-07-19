@@ -23,7 +23,18 @@
     },
     {
       "name": "source",
-      "type": { "name": "ClusterSource", "type": "enum", "symbols": ["D2", "SNAPSHOT"] },
+      "type":
+      {
+        "name": "ClusterSource",
+        "type": "enum",
+        "symbols": ["D2", "NON_D2", "SNAPSHOT"],
+        "symbolDoc":
+        {
+          "D2": "D2 was used to hold cluster information.",
+          "NON_D2": "OPTIONS request was used to get IDLs. This is just a placeholder source for the default cluster when not using D2.",
+          "SNAPSHOT": "A snapshot.json file was used for IDLs."
+        }
+      },
       "default": "D2"
     },
     {

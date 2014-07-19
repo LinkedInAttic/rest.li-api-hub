@@ -33,6 +33,7 @@ class UrlListDatasetLoader extends DatasetLoader {
 
     val cluster = new Cluster() // since there is no d2 cluster when using a url list, create a placeholder Cluster
     cluster.setName(defaultClusterName)
+    cluster.setSource(ClusterSource.NON_D2)
 
     urlListOpt foreach { urlList =>
       urlList.asScala foreach { url =>
@@ -43,6 +44,7 @@ class UrlListDatasetLoader extends DatasetLoader {
         service.setPath(path)
         val serviceCluster = new Cluster()
         serviceCluster.setName(defaultClusterName)
+        serviceCluster.setSource(ClusterSource.NON_D2)
         val serviceClusters = new ClusterArray()
         serviceClusters.add(serviceCluster)
         service.setClusters(serviceClusters)

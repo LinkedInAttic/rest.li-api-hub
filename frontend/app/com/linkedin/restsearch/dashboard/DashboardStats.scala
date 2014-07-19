@@ -12,6 +12,7 @@ case class DashboardStat(name: String, search: Option[String], count: Int)
 
 case class DashboardStats(
   newResources: List[Service],
+  isUsingD2: Boolean,
   migrationCounts: List[DashboardStat],
   resourceCounts: List[DashboardStat],
   methodCounts: List[DashboardStat],
@@ -92,12 +93,15 @@ object DashboardStats {
       DashboardStat(label, None, count)
     }
 
+    val isUsingD2 = snapshot.allClusters.filter(_.getSource != ClusterSource.D2).isEmpty
+
     val currentDateTime = new DateTime(System.currentTimeMillis())
     val startOfRange = currentDateTime.minusDays(31)
     val newResources = snapshot.search(new PagingContext(0, 100), "createdDate:[" + startOfRange.toString("yMMdd") + " TO " + currentDateTime.toString("yMMdd") + "] AND isColoVariant:false").getElements
 
     new DashboardStats(
       newResources.asScala.sortBy(_.getCreatedAt).reverse.toList,
+      isUsingD2,
       migrationCounts.toList,
       resourceCounts,
       methodCounts,

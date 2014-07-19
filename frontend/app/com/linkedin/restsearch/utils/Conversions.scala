@@ -250,7 +250,7 @@ class RichService(service: Service) extends ColoVariantAware with Documented {
 class RichCluster(cluster: Cluster) extends ColoVariantAware {
 
   def getResolver(service: Service) = {
-    if(cluster.getSource == ClusterSource.D2) {
+    if(cluster.getSource == ClusterSource.D2 || cluster.getSource == ClusterSource.NON_D2) {
       new ServiceModelsSchemaResolver(service)
     } else {
       new SnapshotSchemaResolver(service)

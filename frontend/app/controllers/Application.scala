@@ -392,7 +392,7 @@ object Application extends Controller with ConsoleUtils {
   }
 
   /**
-   * Recursive, so did not put it in a view.  TODO: can this be made a method in a view?
+   * Recursive, so did not put it in a view.
    */
   def subresources(cluster: Cluster, service: Service): String = {
     val subs = service.allSubresourcesAsServices
