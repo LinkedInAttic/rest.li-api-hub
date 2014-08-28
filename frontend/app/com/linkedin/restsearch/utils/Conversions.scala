@@ -598,8 +598,8 @@ class RichServiceProvidedRequestResponse(serviceProvidedRequestResponse: Service
 }
 
 class RichRequestResponse(requestResponse: RequestResponse) {
-  private val defaultRequestHeaders = Map("X-Restli-Protocol-Version" -> "1.0.0", "Accept" -> "application/json")
-  private val defaultResponseHeaders = Map("X-Restli-Protocol-Version" -> "1.0.0", "Content-Type" -> "application/json")
+  private val defaultRequestHeaders = Map(RestConstants.HEADER_RESTLI_PROTOCOL_VERSION -> "1.0.0", "Accept" -> "application/json")
+  private val defaultResponseHeaders = Map(RestConstants.HEADER_RESTLI_PROTOCOL_VERSION -> "1.0.0", "Content-Type" -> "application/json")
 
   def requestHeaders: collection.Map[String, String] = {
     return defaultRequestHeaders ++ requestResponse.getRequestHeaders.asScala
