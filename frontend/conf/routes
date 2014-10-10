@@ -3,26 +3,39 @@
 # ~~~~
 
 # Map static resources from the /public folder to the /assets URL path
+# @noPageKeyNeeded
 GET     /assets/*file                controllers.Assets.at(path="/public", file)
 
-# @pagekey play-skeleton-home
+# @noPageKeyNeeded
 GET     /                           controllers.Application.index
+# @noPageKeyNeeded
 GET     /search                     controllers.Application.searchResources
+# @noPageKeyNeeded
 GET     /apis/:name                 controllers.Application.cluster(name)
+# @noPageKeyNeeded
 GET     /apis/:name/:key            controllers.Application.service(name, key)
+# @noPageKeyNeeded
 GET     /apis/:name/:key/:fqn       controllers.Application.model(name, key, fqn)
+# @noPageKeyNeeded
 GET     /idl/:name/:key             controllers.Application.idl(name, key)
 
+# @noPageKeyNeeded
 GET     /console/:name/:key/:op     controllers.Application.console(name, key, op, permlink: Option[String] ?= None)
+# @noPageKeyNeeded
 POST    /console/:name/:key/:op     controllers.Application.send(name, key, op)
+# @noPageKeyNeeded
 POST    /console/permlink           controllers.Application.newPermlink()
+# @noPageKeyNeeded
 GET     /errors                     controllers.Application.errors
 
 # snapshots
+# @noPageKeyNeeded
 GET     /upload                     controllers.Application.uploadPrompt
+# @noPageKeyNeeded
 POST    /upload                     controllers.Application.upload
 
 # for fun
+# @noPageKeyNeeded
 GET     /dashboard                  controllers.Application.dashboard
+# @noPageKeyNeeded
 GET     /docreport                  controllers.Application.documentationReport
-
