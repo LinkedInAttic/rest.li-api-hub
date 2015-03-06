@@ -26,7 +26,7 @@ import com.linkedin.restli.internal.client.OptionsResponseDecoder
 import scala.concurrent.duration.Duration
 import java.util.concurrent.TimeUnit
 import scala.concurrent.Await
-import scala.concurrent.ExecutionContext.Implicits.global
+import play.api.libs.concurrent.Execution.Implicits._
 import com.linkedin.restli.internal.client.OptionsResponseDecoder
 import com.linkedin.data.ByteString
 import com.linkedin.r2.message.rest.RestResponseBuilder
