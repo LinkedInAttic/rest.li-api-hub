@@ -166,7 +166,7 @@ class LuceneSearchIndex extends SearchIndex {
 
     if(service.getClusters().size > 0) {
       val cluster = service.getClusters().get(0)
-      doc.add(new Field("cluster", key, TextField.TYPE_STORED))
+      doc.add(new Field("cluster", cluster.getName(), TextField.TYPE_STORED))
       keywords += cluster.getName()
     }
 
