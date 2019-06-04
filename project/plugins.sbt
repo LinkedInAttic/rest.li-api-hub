@@ -2,7 +2,7 @@
 
 resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
 
-resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
+resolvers += "Typesafe repository" at "https://repo.typesafe.com/typesafe/releases/"
 
 libraryDependencies += "com.linkedin.pegasus" %% "sbt-plugin" % "0.0.2"
 
